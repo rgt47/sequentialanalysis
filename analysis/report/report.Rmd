@@ -1,0 +1,88 @@
+---
+title: "Sequential Analysis"
+author: "Ronald G. Thomas"
+date: "`r Sys.Date()`"
+fontsize: 12pt
+# geometry: margin=1in
+geometry: "left=3cm,right=3in,top=2cm,bottom=2cm"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    keep_tex: true
+    includes:
+#      in_header: "~/shr/preamble.tex"
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{geometry}
+  - \usepackage{longtable}
+  - \usepackage{wrapfig}
+  - \usepackage{caption}
+  - \usepackage{capt-of}
+  - \usepackage{booktabs}
+  - \usepackage{pgfpages}
+  - \usepackage{setspace}
+  - \doublespacing
+  - \setmainfont{Times New Roman}
+abstract: |
+  Background: Sample size adjustment for dropouts.
+  Methods: Simulation. 
+  Results: Key findings.  
+  Conclusion: Summary of implications.
+keywords: ["dropout", "simulation", "keyword3", "keyword4"]
+running_title: "Drop-out Adjustment"
+word_count: "XXXX"
+funding_statement: |
+  None
+conflict_of_interest: |
+  No conflicts.
+---
+
+<!-- your comment 
+\listoftodos
+\lipsum[2]
+\todo[inline, color=cyan]{The original todo note withouth changed colours.\newline Here's another line.}
+\begin{wrapfigure}{r}[.4\textwidth]{.4\textwidth}%
+\textit{\sffamily\normalsize\textcolor{gray!50}{
+Tornado plot: x-axis participants IDs y-axis study visits plot mean of cumulative
+AEs stratified by pre-covid and post-covid study visits (March 12 is
+the date we are using as a cut-point: through March 12 is pre-COVID,
+after March 12 is post-COVID) }}% 
+\end{wrapfigure}
+\lipsum[2]
+
+Sample reference section reference. @Pocock1975a
+
+\begin{marginfigure}
+\includegraphics[width=3in]{/Users/zenn/shr/images/sudoku-3d-cube.pdf} \caption{test}\label{fig:unnamed-chunk-8}
+\end{marginfigure}
+
+My most common usage of the todonotes package, is to insert an uncustomized
+todonotes somewhere in a latex document. An example of this usage is the command
+\todo{Make a cake \ldots},
+\lipsum[1]
+\todo[color=green]{Make a pie \ldots},
+\lipsum[1] 
+\todo{Make a joke \ldots},
+\listoftodos
+-->
+
+
+
+# Introduction
+# Methods
+
+# Results
+# Code 
+
+<!-- your comment 
+```{r, attr.source='.numberLines', ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+```
+-->
+# All refs
+
+\bibliography{x26.bib}
+\bibliographystyle{plain}
+\nocite{*}
+
+# References

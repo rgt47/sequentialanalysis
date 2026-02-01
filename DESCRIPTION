@@ -1,0 +1,14 @@
+Package: sequentialanalysis
+Title: Sequential Analysis Methods for Clinical Trials
+Version: 0.0.0.9000
+Authors@R:
+    person("Ronald G.", "Thomas", email = "rthomas@ucsd.edu", role = c("aut", "cre"))
+Description: Group sequential and adaptive design methods for clinical trial interim analyses.
+License: GPL-3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0
+Imports:
+    renv,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
