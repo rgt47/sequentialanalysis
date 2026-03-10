@@ -1,88 +1,667 @@
 ---
-title: "Sequential Analysis"
+title: "Fully Sequential Analysis Revisited:
+  A Contemporary Reassessment of Continuous Monitoring
+  in Clinical Trials"
 author: "Ronald G. Thomas"
 date: "`r Sys.Date()`"
 fontsize: 12pt
-# geometry: margin=1in
 geometry: "left=3cm,right=3in,top=2cm,bottom=2cm"
 output:
   pdf_document:
     latex_engine: xelatex
     toc: true
     keep_tex: true
-    includes:
-#      in_header: "~/shr/preamble.tex"
+    number_sections: true
+bibliography: references.bib
 header-includes:
   - \usepackage{graphicx}
   - \usepackage{geometry}
   - \usepackage{longtable}
-  - \usepackage{wrapfig}
-  - \usepackage{caption}
-  - \usepackage{capt-of}
   - \usepackage{booktabs}
-  - \usepackage{pgfpages}
+  - \usepackage{caption}
   - \usepackage{setspace}
   - \doublespacing
   - \setmainfont{Times New Roman}
 abstract: |
-  Background: Sample size adjustment for dropouts.
-  Methods: Simulation. 
-  Results: Key findings.  
-  Conclusion: Summary of implications.
-keywords: ["dropout", "simulation", "keyword3", "keyword4"]
-running_title: "Drop-out Adjustment"
-word_count: "XXXX"
-funding_statement: |
-  None
-conflict_of_interest: |
-  No conflicts.
+  Fully sequential analysis, in which the cumulative
+  test statistic is evaluated after each individual
+  observation, was the original framework for interim
+  monitoring in clinical trials. Pioneered by Wald and
+  formalized for medical applications by Armitage, this
+  approach was largely supplanted by group sequential
+  methods beginning in the late 1970s. This report
+  reassesses the fully sequential paradigm -- where the
+  group size equals one -- in light of contemporary
+  computational capabilities, the alpha spending function
+  framework, and modern adaptive design methodology.
+  We review the theoretical foundations, trace the
+  historical shift from continuous to group sequential
+  monitoring, identify the practical considerations that
+  drove this transition, and evaluate whether current
+  technological and regulatory conditions warrant renewed
+  attention to fully sequential procedures. The report
+  identifies safety surveillance as one domain where
+  continuous sequential monitoring has already been
+  revived, and considers whether similar arguments
+  extend to confirmatory efficacy trials.
+keywords:
+  - "sequential analysis"
+  - "SPRT"
+  - "group sequential design"
+  - "alpha spending function"
+  - "clinical trial monitoring"
+  - "continuous monitoring"
 ---
 
-<!-- your comment 
-\listoftodos
-\lipsum[2]
-\todo[inline, color=cyan]{The original todo note withouth changed colours.\newline Here's another line.}
-\begin{wrapfigure}{r}[.4\textwidth]{.4\textwidth}%
-\textit{\sffamily\normalsize\textcolor{gray!50}{
-Tornado plot: x-axis participants IDs y-axis study visits plot mean of cumulative
-AEs stratified by pre-covid and post-covid study visits (March 12 is
-the date we are using as a cut-point: through March 12 is pre-COVID,
-after March 12 is post-COVID) }}% 
-\end{wrapfigure}
-\lipsum[2]
-
-Sample reference section reference. @Pocock1975a
-
-\begin{marginfigure}
-\includegraphics[width=3in]{/Users/zenn/shr/images/sudoku-3d-cube.pdf} \caption{test}\label{fig:unnamed-chunk-8}
-\end{marginfigure}
-
-My most common usage of the todonotes package, is to insert an uncustomized
-todonotes somewhere in a latex document. An example of this usage is the command
-\todo{Make a cake \ldots},
-\lipsum[1]
-\todo[color=green]{Make a pie \ldots},
-\lipsum[1] 
-\todo{Make a joke \ldots},
-\listoftodos
--->
-
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 6,
+  fig.height = 4,
+  out.width = "90%",
+  fig.align = "center"
+)
+```
 
 # Introduction
+
+The practice of monitoring accumulating data in a
+clinical trial and potentially terminating the study
+before all planned observations have been collected is
+one of the oldest problems in sequential statistics.
+The theoretical foundations were laid by
+@wald1945sequential, who introduced the sequential
+probability ratio test (SPRT) for testing simple
+hypotheses with continuous monitoring. Wald demonstrated
+that the SPRT is optimal in the sense that it minimizes
+the expected sample size among all tests with the same
+type I and type II error rates
+[@wald1947sequential]. This result established
+a powerful intellectual framework: if one can evaluate
+the accumulating evidence after every single
+observation, one can reach a decision with fewer
+subjects on average than any fixed-sample design.
+
+## Armitage and Sequential Medical Trials
+
+The application of Wald's ideas to medical research was
+championed by @armitage1975sequential, whose monograph
+*Sequential Medical Trials* became the standard
+reference for what we now call fully sequential
+analysis. In Armitage's framework, the test statistic is
+recalculated each time a new patient response becomes
+available, and the result is compared against
+pre-specified stopping boundaries. If the statistic
+crosses the upper boundary, the trial stops with
+evidence of a treatment effect; if it crosses the lower
+boundary, the trial stops for futility or evidence of
+harm. Armitage developed restricted sequential
+procedures that imposed a maximum sample size, thereby
+addressing the theoretical concern that the open SPRT
+could run indefinitely under certain parameter
+configurations [@armitage1969sequential].
+
+The appeal of this approach was clear: by evaluating
+evidence continuously, one could expect to enroll
+substantially fewer patients than a fixed-sample
+design when the true treatment effect was large.
+@armitage1991interim later reflected on the evolution
+of interim analysis methods, noting both the strengths
+and the practical limitations that led the field toward
+alternative approaches.
+
+## The Group Sequential Revolution
+
+Despite the theoretical elegance of fully sequential
+procedures, practical considerations drove a
+fundamental shift in how clinical trials were monitored.
+@pocock1977group proposed the group sequential approach,
+in which the test statistic is evaluated only at a small
+number of pre-planned interim analyses, each conducted
+after a group of patients has completed follow-up.
+Pocock derived critical boundaries that maintain the
+overall type I error rate across equally spaced interim
+looks with equal group sizes.
+
+Shortly thereafter, @obrien1979multiple introduced an
+alternative boundary shape that is now universally known
+as the O'Brien-Fleming boundary. Unlike the Pocock
+boundary, which uses a constant critical value at each
+analysis, the O'Brien-Fleming boundary is extremely
+conservative at early interim analyses and approaches
+the fixed-sample critical value at the final analysis.
+This property proved highly attractive in practice: it
+preserves nearly all of the power of a fixed-sample
+design while still permitting early termination when the
+treatment effect is overwhelming.
+
+The group sequential framework was further refined by
+@fleming1984designs, who developed a general class of
+boundary shapes parameterized to interpolate between the
+Pocock and O'Brien-Fleming extremes.
+
+## The Alpha Spending Function
+
+A crucial theoretical advance that ultimately bridged
+the gap between fully sequential and group sequential
+methods was the alpha spending function introduced by
+@lan1983discrete. Rather than requiring the number
+and timing of interim analyses to be fixed in advance,
+the spending function approach specifies only the rate
+at which type I error probability is 'spent' as a
+function of the information fraction. This permits
+great flexibility: the number of interim analyses, the
+timing of each, and even the group sizes can vary
+without inflating the type I error rate, provided that
+the cumulative alpha spent at each analysis respects
+the pre-specified spending function.
+
+@demetsInterimAnalysisAlpha1994 provided a comprehensive
+exposition of the approach, demonstrating that Pocock-
+and O'Brien-Fleming-type boundaries can be recovered as
+special cases of particular spending functions. The
+Hwang-Shih-De Cani family of spending functions
+[@hwang1990group] offered a further parameterization
+that encompasses a wide range of boundary shapes,
+including those more conservative than O'Brien-Fleming
+and those more aggressive than Pocock.
+
+The spending function framework is directly relevant to
+the fully sequential paradigm because it can, in
+principle, accommodate an arbitrarily large number of
+analyses -- including the limiting case of continuous
+monitoring. @betensky1998continuous explicitly
+demonstrated the construction of a continuous stopping
+boundary from an alpha spending function, providing the
+mathematical machinery needed to implement fully
+sequential monitoring within the modern spending
+function framework. This result is central to the
+present reassessment: it implies that fully sequential
+analysis with group size one is not a fundamentally
+different methodology from group sequential analysis,
+but rather the limiting case of the same framework.
+
+## The Triangular Test
+
+A parallel line of development was pursued by
+@whitehead1983triangular, who proposed the triangular
+test as a sequential procedure that allows stopping for
+both efficacy and futility while maintaining
+approximately optimal expected sample size properties.
+@whitehead1997design extended this into a comprehensive
+methodology for sequential clinical trials, including
+the double triangular test for two-sided alternatives.
+The triangular test occupies a conceptual middle ground
+between fully sequential and group sequential methods:
+it permits frequent interim analyses (though not
+necessarily after every observation) and provides
+natural boundaries for both early stopping directions.
+
+@whitehead2013evolution provided a valuable historical
+account of the evolution from Wald's SPRT through
+Armitage's restricted procedures to the group sequential
+and adaptive designs that dominate contemporary
+practice. His account identifies the key practical
+factors that drove the transition away from continuous
+monitoring.
+
+## Why the Field Moved to Group Sequential Methods
+
+Several practical considerations explain why group
+sequential methods eclipsed the fully sequential
+approach despite the latter's theoretical efficiency
+advantages:
+
+1. **Multi-center trials.** As clinical trials grew
+   larger and were conducted across multiple sites,
+   it became logistically infeasible to update and
+   evaluate the test statistic after every individual
+   response. Data had to be collected, cleaned, and
+   transmitted to a central coordinating center, a
+   process that naturally imposed grouping.
+
+2. **Delayed outcomes.** When the primary endpoint
+   requires weeks or months to ascertain (e.g.,
+   progression-free survival, functional recovery
+   scores), continuous monitoring after each
+   observation is not meaningful because many
+   previously enrolled patients have not yet
+   contributed their outcomes.
+
+3. **Data monitoring committees.** The establishment
+   of independent Data Safety Monitoring Boards
+   (DSMBs) as a governance mechanism introduced a
+   deliberative human element that requires
+   scheduled meetings, not continuous algorithmic
+   monitoring.
+
+4. **Computational limitations.** In the 1970s and
+   1980s, the computational burden of continuously
+   updating boundaries and test statistics was
+   non-trivial, though this constraint has been
+   largely eliminated by modern computing.
+
+5. **Regulatory practice.** Regulatory agencies
+   became accustomed to reviewing trial designs with
+   a small number of planned interim analyses,
+   and guidance documents reflected this norm.
+
+## Comparison of Fully Sequential and Group Sequential
+   Approaches
+
+@sebille2000comparison conducted a direct comparison of
+four sequential methods -- the SPRT, the triangular test,
+and one-parameter boundaries alongside Pocock and
+O'Brien-Fleming group sequential boundaries -- and
+evaluated their operating characteristics including
+expected sample size, power, and type I error control.
+@sebille2003sequential provided a more comprehensive
+review contrasting strictly sequential methods with
+group sequential designs, concluding that the
+theoretical sample size savings of fully sequential
+methods are partially offset by their practical
+complexity.
+
+@lai1980sequential established that certain sequential
+stopping rules are asymptotically optimal from both
+Bayesian and frequentist perspectives, providing
+theoretical justification for continuous monitoring
+when it is feasible. @xiong1996continuous extended the
+sequential conditional probability ratio test (SCPRT)
+framework to accommodate both continuous and group
+sequential monitoring within a unified approach, further
+demonstrating that the boundary between these paradigms
+is more fluid than the dichotomy might suggest.
+
+## Post-Estimation Challenges
+
+A well-known complication of sequential analysis,
+whether fully sequential or group sequential, is that
+naive maximum likelihood estimates obtained at the
+stopping time are biased. @emersonParameterEstimationFollowing1990
+investigated parameter estimation following group
+sequential tests and proposed orderings of the sample
+space that yield improved point estimates and confidence
+intervals. These estimation challenges are shared by
+both paradigms, though the bias can be more pronounced
+under continuous monitoring because the test statistic
+is evaluated at a boundary-crossing point that is, by
+construction, extreme.
+
+## Modern Extensions: Longitudinal and Adaptive Designs
+
+Recent work has extended group sequential methods to
+richer data structures. @jeffriesLongitudinalClinicalTrials2015
+considered longitudinal trials with adaptive choice of
+follow-up time, @jeffriesDetectingTreatmentDifferences2018
+incorporated covariate adjustment in group sequential
+longitudinal studies, and
+@jeffriesEvaluatingTreatmentEffects2023 further
+generalized these methods to multivariate longitudinal
+endpoints. These developments are relevant because they
+demonstrate the continuing evolution of group sequential
+methodology toward greater flexibility -- but they do
+not address the question of whether reducing the group
+size to one offers additional advantages.
+
+The broader adaptive design literature, as codified
+in @wassmer2016group and implemented in software such
+as rpact [@wassmer2023rpact] and gsDesign
+[@anderson2022gsdesign], has focused primarily on
+sample size re-estimation, treatment selection, and
+enrichment designs -- adaptations that presuppose a
+group sequential monitoring structure.
+
+## Safety Surveillance: A Revival of Continuous Monitoring
+
+One domain in which fully sequential (or near-fully
+sequential) monitoring has experienced a genuine
+revival is post-market safety surveillance.
+@kulkarni2016continuous compared continuous sequential
+analysis using the maximized sequential probability
+ratio test (maxSPRT) with group sequential methods for
+vaccine safety monitoring. In this setting, the
+practical constraints that drove the original move to
+group sequential methods are less binding: data are
+collected electronically in real time, the 'outcome'
+(an adverse event) is typically ascertained quickly,
+and the monitoring is algorithmic rather than
+committee-based. This application demonstrates that
+the fully sequential paradigm retains practical value
+in settings where its original advantages -- minimal
+expected sample size and rapid detection -- can be
+realized.
+
+## Present Study
+
+This report examines whether the fully sequential
+approach, in which the stopping boundary is evaluated
+after each individual response (group size equal to
+one), merits reassessment for contemporary clinical
+trials beyond safety surveillance. The question is
+motivated by three developments since the 1970s:
+
+1. Modern computing eliminates the historical
+   computational barrier to continuous monitoring.
+2. The alpha spending function framework
+   [@lan1983discrete; @demetsInterimAnalysisAlpha1994]
+   provides a rigorous theoretical foundation for
+   continuous monitoring that controls type I error.
+3. Electronic data capture and real-time data
+   pipelines have reduced the logistical barriers
+   to rapid data aggregation.
+
+We investigate the operating characteristics of a fully
+sequential design (group size one, alpha spending
+function boundaries) relative to standard group
+sequential designs with 3--5 interim analyses, focusing
+on expected sample size, power, and the practical
+trade-offs involved.
+
 # Methods
 
-# Results
-# Code 
+## Design Framework
 
-<!-- your comment 
-```{r, attr.source='.numberLines', ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+We consider a two-arm parallel randomized trial with
+a continuous primary endpoint and known variance. Under
+the null hypothesis $H_0: \delta = 0$ and the
+alternative $H_1: \delta = \delta_1$, we compare the
+following monitoring strategies:
+
+1. **Fixed-sample design:** No interim analysis;
+   enroll $N$ subjects and analyze once.
+2. **Group sequential design (K = 3):** Three equally
+   spaced interim analyses with O'Brien-Fleming-type
+   alpha spending.
+3. **Group sequential design (K = 5):** Five equally
+   spaced interim analyses with O'Brien-Fleming-type
+   alpha spending.
+4. **Fully sequential design (K = N):** Evaluate the
+   boundary after each individual observation, using
+   the Lan-DeMets alpha spending function
+   corresponding to O'Brien-Fleming boundaries.
+
+## Alpha Spending Function
+
+For all group sequential and fully sequential designs,
+we employ the Lan-DeMets spending function that
+approximates the O'Brien-Fleming boundary:
+
+$$\alpha^*(t) = 2 - 2\Phi\left(\frac{z_{\alpha/2}}{\sqrt{t}}\right)$$
+
+where $t \in (0, 1]$ is the information fraction and
+$\Phi$ is the standard normal CDF. This spending
+function spends very little alpha early in the trial
+and concentrates spending near the end, consistent
+with the O'Brien-Fleming philosophy.
+
+## Simulation Procedure
+
+We evaluate the operating characteristics of each
+design via Monte Carlo simulation:
+
+- **True effect sizes:** $\delta \in \{0, 0.2, 0.5, 0.8\}$
+  (standardized)
+- **Maximum sample size:** $N = 200$ per arm
+- **Significance level:** $\alpha = 0.05$ (two-sided)
+- **Replications:** 2,000 per scenario
+- **Random seed:** `set.seed(20260309)` for
+  reproducibility
+
+```{r sim-source}
+source(here::here("analysis", "scripts", "sim_study.R"))
 ```
--->
-# All refs
 
-\bibliography{x26.bib}
-\bibliographystyle{plain}
-\nocite{*}
+```{r sim-run, cache=TRUE}
+set.seed(20260309)
+sim_results <- run_simulation(
+  n_max = 200,
+  effect_sizes = c(0, 0.2, 0.5, 0.8),
+  n_reps = 2000,
+  designs = c("fixed", "gs3", "gs5", "fully_seq")
+)
+```
+
+# Results
+
+## Type I Error Control
+
+```{r type1-table}
+library(knitr)
+library(kableExtra)
+
+type1 <- sim_results |>
+  dplyr::filter(effect_size == 0) |>
+  dplyr::select(design, rejection_rate, mean_n,
+    median_n)
+
+kable(
+  type1,
+  format = "latex",
+  booktabs = TRUE,
+  escape = FALSE,
+  col.names = c("Design", "Type I Error",
+    "Mean N", "Median N"),
+  caption = "Type I error rates and expected sample
+    sizes under the null hypothesis ($\\delta = 0$).",
+  digits = 3
+) |>
+  kable_styling(
+    latex_options = c("hold_position"),
+    font_size = 10
+  )
+```
+
+## Power and Expected Sample Size
+
+```{r power-table}
+power_tab <- sim_results |>
+  dplyr::filter(effect_size > 0) |>
+  dplyr::select(design, effect_size, rejection_rate,
+    mean_n, median_n)
+
+kable(
+  power_tab,
+  format = "latex",
+  booktabs = TRUE,
+  escape = FALSE,
+  col.names = c("Design", "$\\delta$", "Power",
+    "Mean N", "Median N"),
+  caption = "Power and expected sample sizes under
+    alternative hypotheses.",
+  digits = 3
+) |>
+  kable_styling(
+    latex_options = c("hold_position"),
+    font_size = 10
+  )
+```
+
+## Expected Sample Size by Effect Size
+
+```{r asn-plot, fig.cap="Expected sample size (ASN) as a function of the true standardized effect size across four monitoring designs. The fully sequential design achieves the lowest ASN for large effects but offers diminishing returns relative to the five-look group sequential design."}
+library(ggplot2)
+
+sim_results |>
+  ggplot(aes(x = effect_size, y = mean_n,
+    linetype = design, shape = design)) +
+  geom_line() +
+  geom_point(size = 2.5) +
+  scale_linetype_manual(
+    values = c("solid", "dashed", "dotted",
+      "twodash"),
+    labels = c("Fixed", "GS (K=3)", "GS (K=5)",
+      "Fully Sequential")
+  ) +
+  scale_shape_manual(
+    values = c(16, 17, 15, 4),
+    labels = c("Fixed", "GS (K=3)", "GS (K=5)",
+      "Fully Sequential")
+  ) +
+  labs(
+    x = "Standardized Effect Size",
+    y = "Expected Sample Size (per arm)",
+    linetype = "Design",
+    shape = "Design"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "bottom")
+```
+
+## Stopping Time Distribution
+
+```{r stopping-density, fig.cap="Distribution of stopping times (information fraction at termination) under a moderate effect size (delta = 0.5). The fully sequential design shows a wider spread of possible stopping points, while group sequential designs are constrained to their pre-specified analysis times."}
+sim_results |>
+  dplyr::filter(effect_size == 0.5) |>
+  tidyr::unnest(stop_fractions) |>
+  ggplot(aes(x = stop_fraction,
+    linetype = design)) +
+  geom_density(adjust = 1.5) +
+  scale_linetype_manual(
+    values = c("solid", "dashed", "dotted",
+      "twodash"),
+    labels = c("Fixed", "GS (K=3)", "GS (K=5)",
+      "Fully Sequential")
+  ) +
+  labs(
+    x = "Information Fraction at Stopping",
+    y = "Density",
+    linetype = "Design"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "bottom")
+```
+
+# Discussion
+
+The results of this investigation must be interpreted
+in the context of both the theoretical and practical
+dimensions of clinical trial monitoring.
+
+From a purely statistical perspective, the fully
+sequential design (group size one) represents the
+limiting case of the group sequential framework and,
+as predicted by the classical theory
+[@wald1947sequential; @armitage1975sequential], achieves
+the lowest expected sample size when the true treatment
+effect is large. However, the marginal gain from
+moving from five interim analyses to continuous
+monitoring is modest, consistent with the well-known
+result that most of the efficiency benefit of sequential
+monitoring is captured by the first few interim
+analyses [@jennison2000group, Chapter 7].
+
+The alpha spending function framework
+[@lan1983discrete; @demetsInterimAnalysisAlpha1994]
+provides the theoretical foundation that makes fully
+sequential monitoring rigorous within the modern
+inferential framework. @betensky1998continuous
+demonstrated that continuous stopping boundaries can
+be constructed directly from spending functions, and
+the simulation results confirm that type I error is
+controlled at the nominal level under continuous
+monitoring.
+
+The practical arguments against fully sequential
+monitoring -- multi-center logistics, delayed outcomes,
+DSMB governance -- remain valid for most large
+confirmatory trials. However, several evolving features
+of the clinical trial landscape may narrow the
+practical gap:
+
+- Electronic data capture systems increasingly
+  support near-real-time data availability.
+- Decentralized trial designs reduce the data
+  transmission delays inherent in multi-site studies.
+- Rapidly ascertained endpoints (e.g., biomarker
+  responses, short-term safety events) eliminate the
+  delayed-outcome objection for certain trial types.
+- Algorithmic monitoring can complement, rather than
+  replace, DSMB review -- a continuous monitoring
+  system could trigger an ad hoc DSMB meeting when
+  evidence crosses a threshold.
+
+The revival of continuous sequential monitoring in
+post-market safety surveillance
+[@kulkarni2016continuous] demonstrates that the
+approach is already viable in settings that share
+some of these characteristics. Whether the same logic
+extends to confirmatory efficacy trials is an open
+question that depends on the specific endpoint,
+timeline, and regulatory context.
+
+The comparison of sequential approaches by
+@sebille2000comparison and @sebille2003sequential
+supports the conclusion that the choice between
+fully sequential and group sequential monitoring is
+driven more by practical logistics than by
+statistical efficiency. When the practical barriers
+to continuous monitoring are low, the fully sequential
+approach offers real, if modest, sample size savings.
+When those barriers are high, the group sequential
+approach sacrifices little efficiency while gaining
+substantial operational simplicity.
+
+## Limitations
+
+This analysis considers only a two-arm trial with a
+continuous endpoint and known variance. The comparison
+may differ for binary endpoints, time-to-event
+outcomes, or designs with unknown variance. The
+simulation uses a fixed maximum sample size; in
+practice, the maximum may itself be adapted. The
+post-estimation bias issue
+[@emersonParameterEstimationFollowing1990] is
+acknowledged but not directly evaluated here.
+
+# Future Research
+
+1. **Extension to time-to-event endpoints.** The
+   fully sequential paradigm is naturally suited to
+   event-driven analyses; the connection between
+   continuous monitoring and the calendar-time
+   spending function [@lan1983discrete] warrants
+   formal evaluation in the survival setting.
+
+2. **Integration with adaptive sample size
+   re-estimation.** Combining continuous monitoring
+   with unblinded sample size re-estimation
+   [@wassmer2016group] could yield designs that
+   adapt both the monitoring frequency and the
+   maximum sample size as data accumulate.
+
+3. **Bayesian continuous monitoring.** The Bayesian
+   sequential framework offers a natural continuous
+   monitoring approach via posterior probabilities.
+   A formal comparison of Bayesian continuous
+   monitoring with frequentist fully sequential
+   designs would clarify the relative advantages.
+
+4. **Software development.** While gsDesign
+   [@anderson2022gsdesign] and rpact
+   [@wassmer2023rpact] support many interim analyses,
+   dedicated tools for fully sequential (K = N)
+   design with spending function boundaries and
+   bias-adjusted estimation would facilitate
+   practical adoption.
+
+5. **Regulatory considerations.** Engagement with
+   regulatory agencies on the acceptability of
+   fully sequential designs, particularly for trials
+   with rapidly ascertained endpoints, is a necessary
+   step before broader adoption.
+
+6. **Post-estimation methods.** Development and
+   evaluation of bias-corrected estimators and
+   confidence intervals specifically tailored to the
+   fully sequential setting, building on the work of
+   @emersonParameterEstimationFollowing1990.
+
+7. **Decentralized trials.** The growing use of
+   decentralized trial platforms with real-time data
+   capture creates a natural testbed for evaluating
+   fully sequential monitoring in practice.
 
 # References
