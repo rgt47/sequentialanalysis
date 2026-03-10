@@ -24,6 +24,92 @@ compute_boundaries <- function(k, n_max, alpha = 0.05) {
   )
 }
 
+simulate_one_trial_detailed <- function(n_max, delta,
+                                       sigma = 1,
+                                       bounds) {
+  z_upper <- bounds$z_upper
+  info_frac <- bounds$info_frac
+  k <- length(info_frac)
+  analysis_n <- round(info_frac * n_max)
+  analysis_n[k] <- n_max
+
+  y_trt <- rnorm(n_max, mean = delta, sd = sigma)
+  y_ctl <- rnorm(n_max, mean = 0, sd = sigma)
+
+  cum_sum_trt <- cumsum(y_trt)
+  cum_sum_ctl <- cumsum(y_ctl)
+  cum_diff <- cum_sum_trt - cum_sum_ctl
+  cum_var <- (1:n_max) * 2 * sigma^2
+  cum_z <- cum_diff / sqrt(cum_var)
+
+  rejected <- FALSE
+  stop_n <- n_max
+  stop_frac <- 1
+  mle_at_stop <- cum_diff[n_max] / n_max
+
+  for (j in seq_along(analysis_n)) {
+    idx <- analysis_n[j]
+    z_val <- cum_z[idx]
+    if (abs(z_val) >= z_upper[j]) {
+      rejected <- TRUE
+      stop_n <- idx
+      stop_frac <- info_frac[j]
+      mle_at_stop <- cum_diff[idx] / idx
+      break
+    }
+  }
+
+  final_mle <- cum_diff[n_max] / n_max
+
+  tibble(
+    rejected = rejected,
+    stop_n = stop_n,
+    stop_fraction = stop_frac,
+    mle_at_stop = mle_at_stop,
+    final_mle = final_mle
+  )
+}
+
+run_hf_simulation <- function(n_max = 200,
+                              delta = 0.5,
+                              n_reps = 2000,
+                              k_values = c(3, 5, 10,
+                                20, 50, 200)) {
+  results <- map_dfr(k_values, function(k) {
+    bnd <- compute_boundaries(k, n_max)
+    reps <- map_dfr(seq_len(n_reps), function(i) {
+      simulate_one_trial_detailed(
+        n_max = n_max,
+        delta = delta,
+        bounds = bnd
+      )
+    })
+
+    bias_naive <- mean(reps$mle_at_stop) - delta
+    bias_final <- mean(
+      ifelse(reps$stop_n < n_max,
+        reps$mle_at_stop, reps$final_mle)
+    ) - delta
+
+    tibble(
+      k = k,
+      label = ifelse(k == n_max, "Fully Seq",
+        paste0("K=", k)),
+      rejection_rate = mean(reps$rejected),
+      mean_n = mean(reps$stop_n),
+      median_n = median(reps$stop_n),
+      sd_n = sd(reps$stop_n),
+      mean_mle = mean(reps$mle_at_stop),
+      bias_naive = bias_naive,
+      rmse_naive = sqrt(mean(
+        (reps$mle_at_stop - delta)^2)),
+      pct_saving = (1 - mean(reps$stop_n) /
+        n_max) * 100
+    )
+  })
+  results
+}
+
 simulate_one_trial <- function(n_max, delta, sigma = 1,
                                design_type, bounds) {
   z_upper <- bounds$z_upper
@@ -72,6 +158,9 @@ run_simulation <- function(n_max = 200,
     fixed = list(k = 1, label = "Fixed"),
     gs3 = list(k = 3, label = "GS (K=3)"),
     gs5 = list(k = 5, label = "GS (K=5)"),
+    gs10 = list(k = 10, label = "GS (K=10)"),
+    gs20 = list(k = 20, label = "GS (K=20)"),
+    gs50 = list(k = 50, label = "GS (K=50)"),
     fully_seq = list(k = n_max, label = "Fully Seq")
   )
 

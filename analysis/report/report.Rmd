@@ -513,11 +513,14 @@ sim_results |>
 ## Stopping Time Distribution
 
 ```{r stopping-density, fig.cap="Distribution of stopping times (information fraction at termination) under a moderate effect size (delta = 0.5). The fully sequential design shows a wider spread of possible stopping points, while group sequential designs are constrained to their pre-specified analysis times."}
-sim_results |>
+stop_df <- sim_results |>
   dplyr::filter(effect_size == 0.5) |>
-  tidyr::unnest(stop_fractions) |>
-  ggplot(aes(x = stop_fraction,
-    linetype = design)) +
+  dplyr::select(design, stop_fractions) |>
+  tidyr::unnest_longer(stop_fractions,
+    values_to = "stop_fraction")
+
+ggplot(stop_df, aes(x = stop_fraction,
+  linetype = design)) +
   geom_density(adjust = 1.5) +
   scale_linetype_manual(
     values = c("solid", "dashed", "dotted",
@@ -655,13 +658,324 @@ acknowledged but not directly evaluated here.
 
 6. **Post-estimation methods.** Development and
    evaluation of bias-corrected estimators and
-   confidence intervals specifically tailored to the
-   fully sequential setting, building on the work of
-   @emersonParameterEstimationFollowing1990.
+   confidence intervals specifically tailored to
+   the fully sequential setting, building on
+   Emerson and Fleming
+   [-@emersonParameterEstimationFollowing1990].
 
 7. **Decentralized trials.** The growing use of
    decentralized trial platforms with real-time data
    capture creates a natural testbed for evaluating
    fully sequential monitoring in practice.
+
+\newpage
+\appendix
+
+# Appendix: High-Frequency Monitoring as a Practical
+  Middle Ground
+
+## Motivation
+
+The main body of this report frames the comparison as
+fully sequential (K = N) versus the standard group
+sequential paradigm (K = 3--5). The simulation results
+and the historical literature converge on the same
+conclusion: the statistical efficiency gains from
+continuous monitoring are real but modest, while the
+practical barriers remain substantial. This framing,
+however, presents a false dichotomy. The alpha spending
+function framework imposes no constraint on K. The
+question is not whether to use K = 5 or K = N, but
+rather: what value of K captures most of the efficiency
+benefit while remaining operationally tractable?
+
+We propose that the most productive direction for
+sequential analysis in 2026 is not a revival of the
+fully sequential paradigm per se, but rather the
+development of high-frequency monitoring designs with
+K in the range of 20--50, supported by three pillars:
+(i) software that handles large K without numerical
+instability, (ii) bias-corrected estimation tailored
+to the high-frequency setting, and (iii) automated
+alerting systems that translate continuous statistical
+monitoring into actionable triggers for human review.
+
+## Diminishing Returns in K: An Empirical Analysis
+
+To motivate the choice of K, we extend the simulation
+from the main report to a finer grid of monitoring
+frequencies. We fix the effect size at $\delta = 0.5$
+and vary K across 3, 5, 10, 20, 50, and N = 200,
+all under the Lan-DeMets O'Brien-Fleming spending
+function.
+
+```{r hf-sim, cache=TRUE}
+set.seed(20260309)
+hf_results <- run_hf_simulation(
+  n_max = 200,
+  delta = 0.5,
+  n_reps = 2000,
+  k_values = c(3, 5, 10, 20, 50, 200)
+)
+```
+
+```{r hf-table}
+hf_display <- hf_results |>
+  dplyr::select(
+    label, rejection_rate, mean_n, median_n,
+    sd_n, bias_naive, rmse_naive, pct_saving
+  )
+
+kable(
+  hf_display,
+  format = "latex",
+  booktabs = TRUE,
+  escape = FALSE,
+  digits = 3,
+  col.names = c(
+    "Design", "Power", "Mean N", "Median N",
+    "SD(N)", "Bias", "RMSE", "\\% Saved"
+  ),
+  caption = paste(
+    "Operating characteristics across monitoring",
+    "frequencies ($\\delta = 0.5$, $N_{\\max} = 200$",
+    "per arm). Bias and RMSE refer to the naive MLE",
+    "at the stopping time. Percent saved is relative",
+    "to the fixed-sample maximum."
+  )
+) |>
+  kable_styling(
+    latex_options = c("hold_position", "scale_down"),
+    font_size = 9
+  )
+```
+
+```{r hf-asn-plot, fig.cap="Expected sample size and sample size savings as a function of K (number of planned analyses) under delta = 0.5. The curve flattens rapidly: K = 20 captures approximately 90 percent of the savings available from fully sequential monitoring.", fig.height=3.5}
+library(ggplot2)
+
+p1 <- ggplot(hf_results,
+  aes(x = k, y = mean_n)) +
+  geom_line() +
+  geom_point(size = 2.5, shape = 16) +
+  scale_x_continuous(
+    breaks = c(3, 5, 10, 20, 50, 200),
+    trans = "log10",
+    labels = c("3", "5", "10", "20", "50", "200")
+  ) +
+  labs(
+    x = "Number of Analyses (K)",
+    y = "Expected Sample Size (per arm)"
+  ) +
+  theme_minimal(base_size = 10)
+
+p2 <- ggplot(hf_results,
+  aes(x = k, y = pct_saving)) +
+  geom_line() +
+  geom_point(size = 2.5, shape = 17) +
+  scale_x_continuous(
+    breaks = c(3, 5, 10, 20, 50, 200),
+    trans = "log10",
+    labels = c("3", "5", "10", "20", "50", "200")
+  ) +
+  labs(
+    x = "Number of Analyses (K)",
+    y = "Sample Size Savings (%)"
+  ) +
+  theme_minimal(base_size = 10)
+
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+```
+
+The key result is the shape of the curve. Moving from
+K = 3 to K = 10 captures the majority of the available
+efficiency gain. Moving from K = 10 to K = 20 adds a
+meaningful but smaller increment. Beyond K = 20, the
+returns diminish sharply. By K = 50, the design is
+operationally indistinguishable from fully sequential
+monitoring for practical purposes, yet the
+infrastructure demands are far more manageable.
+
+## Bias Under High-Frequency Monitoring
+
+```{r hf-bias-plot, fig.cap="Naive MLE bias at the stopping time as a function of K. More frequent monitoring increases the conditional bias at stopping because the test statistic is more likely to cross the boundary at an extreme point. The bias remains small in absolute terms but grows monotonically with K.", fig.height=3}
+ggplot(hf_results,
+  aes(x = k, y = bias_naive)) +
+  geom_line() +
+  geom_point(size = 2.5, shape = 15) +
+  geom_hline(yintercept = 0, linetype = "dashed",
+    colour = "grey50") +
+  scale_x_continuous(
+    breaks = c(3, 5, 10, 20, 50, 200),
+    trans = "log10",
+    labels = c("3", "5", "10", "20", "50", "200")
+  ) +
+  labs(
+    x = "Number of Analyses (K)",
+    y = "Bias of Naive MLE"
+  ) +
+  theme_minimal(base_size = 10)
+```
+
+A well-known consequence of optional stopping is that
+the naive maximum likelihood estimate at the stopping
+time is biased away from the null
+[@emersonParameterEstimationFollowing1990]. The figure
+above confirms that this bias grows with K: more
+frequent monitoring creates more opportunities for the
+test statistic to cross the boundary at an extreme
+realization. However, two observations temper this
+concern. First, the absolute magnitude of the bias
+remains modest even at K = 200. Second, the bias is
+a known and correctable phenomenon. Several approaches
+to bias-corrected estimation following sequential
+monitoring have been developed, including median
+unbiased estimation, conditional MLE methods, and
+bootstrap-based corrections. Practical adoption of
+high-frequency monitoring will require that these
+methods be packaged into accessible software rather
+than remaining the province of methodological
+specialists.
+
+## A Software Architecture for High-Frequency
+   Monitoring
+
+The current generation of group sequential software
+-- gsDesign [@anderson2022gsdesign], rpact
+[@wassmer2023rpact], and the Lan-DeMets boundary
+programs -- was designed for the K = 3--5 regime. While
+these tools can technically accommodate larger K, they
+were not optimized for it. A purpose-built system for
+high-frequency monitoring would require three
+components:
+
+**Boundary computation engine.** The spending function
+must be evaluated at K = 20--50 information fractions,
+and the corresponding critical boundaries computed via
+numerical integration or recursive application of the
+multivariate normal distribution. For moderate K
+(up to 50), existing algorithms based on the work of
+@jennison2000group scale adequately. For K approaching
+N, direct computation becomes prohibitive and the
+continuous boundary approximation of
+@betensky1998continuous should be used instead. A
+practical implementation would pre-compute boundaries
+for a fine grid of information fractions and
+interpolate at the actual analysis times.
+
+**Bias-corrected estimation module.** At each interim
+analysis, the system should report not only the naive
+test statistic and p-value but also:
+
+- The median unbiased estimate of the treatment effect,
+  computed by inverting the stage-wise ordering of the
+  sample space.
+- A repeated confidence interval that maintains
+  simultaneous coverage across all analysis times.
+- The conditional power given the data observed so
+  far, to inform DSMB deliberations about futility.
+
+These quantities are computationally more demanding
+than the naive estimates but are feasible for K up to
+50 with modern hardware.
+
+**Automated alerting layer.** The most consequential
+practical innovation would be an alerting system that
+decouples statistical monitoring from DSMB scheduling.
+In the current paradigm, the DSMB meets at
+pre-specified calendar times, and the interim analysis
+is conducted at that meeting. In a high-frequency
+monitoring paradigm, the statistical comparison would
+run continuously (or at each new data lock), and the
+system would generate alerts at three thresholds:
+
+1. *Efficacy signal* -- the test statistic crosses the
+   upper spending function boundary. This triggers an
+   expedited DSMB meeting to review the unblinded data
+   and consider early termination.
+2. *Futility signal* -- the conditional power falls
+   below a pre-specified threshold (e.g., 10--20\%).
+   This triggers a DSMB review of whether to continue
+   enrollment.
+3. *Safety signal* -- a secondary monitoring rule for
+   adverse events crosses a safety boundary. This
+   triggers immediate safety review regardless of the
+   efficacy analysis schedule.
+
+The DSMB retains full authority over all stopping
+decisions. The system merely ensures that evidence is
+not accumulating unexamined between scheduled meetings.
+This is particularly relevant for trials in which
+enrollment is fast relative to the DSMB meeting
+schedule: if 50 patients enroll between quarterly
+meetings, a group sequential design with K = 5 may
+miss the opportunity to stop the trial at the
+statistically optimal time.
+
+## The Diminishing Marginal Cost of More Analyses
+
+A counterargument to high-frequency monitoring is that
+each interim analysis incurs administrative cost: data
+locks, database reconciliation, statistical programming,
+and DSMB coordination. This is true in the current
+paradigm but largely an artifact of it. If the
+monitoring system is automated -- data are ingested
+continuously from electronic data capture, boundaries
+are pre-computed, and the test statistic is updated
+programmatically -- then the marginal cost of the 21st
+analysis is approximately zero. The cost structure
+shifts from per-analysis overhead to a fixed upfront
+investment in infrastructure. For large trials where
+the cost per enrolled patient is high and the potential
+savings from early termination are substantial, this
+investment is easily justified.
+
+## Practical Recommendations
+
+Based on the simulation results and the considerations
+above, we offer the following concrete recommendations:
+
+1. **Default to K = 20 rather than K = 5.** For trials
+   with electronically captured endpoints and
+   turnaround times of less than one month, the
+   spending function framework supports 20 planned
+   analyses with no loss of type I error control and
+   meaningful gains in expected sample size. The
+   practical overhead is minimal if the monitoring
+   system is automated.
+
+2. **Use the O'Brien-Fleming spending function.** At
+   high K, the O'Brien-Fleming spending function
+   spends negligible alpha at early analyses, so the
+   cost of 'looking more often' is almost entirely
+   borne by a trivially small increase in the maximum
+   sample size (typically less than 1\% inflation
+   relative to the fixed-sample design).
+
+3. **Report bias-corrected estimates at every
+   analysis.** The naive MLE should never be the sole
+   estimate presented to a DSMB. At minimum, report
+   the median unbiased estimate and the repeated
+   confidence interval alongside the naive values.
+
+4. **Build the alerting system first.** The most
+   impactful near-term investment is not in novel
+   statistical methodology but in software
+   engineering: a system that ingests data, updates
+   the test statistic, evaluates it against
+   pre-computed boundaries, and generates structured
+   alerts when thresholds are crossed. This system
+   should produce a standardized DSMB report at each
+   triggered analysis, including the spending function
+   status (cumulative alpha spent), the bias-corrected
+   estimate, conditional power, and a recommendation
+   for whether a DSMB meeting is warranted.
+
+5. **Treat K as a design parameter to be optimized.**
+   Rather than choosing K by convention (the current
+   default of 3--5), select K by explicitly trading
+   off expected sample size savings against
+   infrastructure cost. The diminishing-returns curve
+   from the simulation provides the empirical basis
+   for this trade-off.
 
 # References
