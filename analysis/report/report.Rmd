@@ -3,7 +3,7 @@ title: "Fully Sequential Analysis Revisited:
   A Contemporary Reassessment of Continuous Monitoring
   in Clinical Trials"
 author: "Ronald G. Thomas"
-date: "`r Sys.Date()`"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
 fontsize: 11pt
 geometry: "left=3cm,right=5cm,top=2cm,bottom=2cm"
 output:
@@ -12,7 +12,9 @@ output:
     toc: true
     keep_tex: true
     number_sections: true
+    highlight: tango
 bibliography: references.bib
+csl: statistics-in-medicine.csl
 link-citations: true
 header-includes:
   - \usepackage{graphicx}
