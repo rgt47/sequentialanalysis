@@ -22,7 +22,6 @@ header-includes:
   - \usepackage{longtable}
   - \usepackage{booktabs}
   - \usepackage{caption}
-  - \setmainfont{Times New Roman}
 abstract: |
   Fully sequential analysis, in which the cumulative
   test statistic is evaluated after each individual
