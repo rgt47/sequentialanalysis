@@ -2,10 +2,10 @@
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \documentclass[
-  12pt,
+  11pt,
 ]{article}
 \usepackage{xcolor}
-\usepackage[left=3cm,right=3cm,top=2cm,bottom=2cm]{geometry}
+\usepackage[left=3cm,right=5cm,top=2cm,bottom=2cm]{geometry}
 \usepackage{amsmath,amssymb}
 \setcounter{secnumdepth}{5}
 \usepackage{iftex}
@@ -94,9 +94,6 @@
 \usepackage{longtable}
 \usepackage{booktabs}
 \usepackage{caption}
-\usepackage{setspace}
-% \doublespacing
-\setmainfont{Times New Roman}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -117,15 +114,13 @@
 \hypersetup{
   pdftitle={Fully Sequential Analysis Revisited: A Contemporary Reassessment of Continuous Monitoring in Clinical Trials},
   pdfauthor={Ronald G. Thomas},
-  pdfkeywords={sequential analysis, SPRT, group sequential design, alpha
-spending function, clinical trial monitoring, continuous monitoring},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 
 \title{Fully Sequential Analysis Revisited: A Contemporary Reassessment
 of Continuous Monitoring in Clinical Trials}
 \author{Ronald G. Thomas}
-\date{2026-03-09}
+\date{April 11, 2026}
 
 \begin{document}
 \maketitle
@@ -157,82 +152,91 @@ to confirmatory efficacy trials.
 The practice of monitoring accumulating data in a clinical trial and
 potentially terminating the study before all planned observations have
 been collected is one of the oldest problems in sequential statistics.
-The theoretical foundations were laid by Wald (1945), who introduced the
-sequential probability ratio test (SPRT) for testing simple hypotheses
-with continuous monitoring. Wald demonstrated that the SPRT is optimal
-in the sense that it minimizes the expected sample size among all tests
-with the same type I and type II error rates (Wald 1947). This result
-established a foundational intellectual framework: if one can evaluate the
+The theoretical foundations were laid
+by\textsuperscript{\citeproc{ref-wald1945sequential}{1}}, who introduced
+the sequential probability ratio test (SPRT) for testing simple
+hypotheses with continuous monitoring. Wald demonstrated that the SPRT
+is optimal in the sense that it minimizes the expected sample size among
+all tests with the same type I and type II error
+rates\textsuperscript{\citeproc{ref-wald1947sequential}{2}}. This result
+established a powerful intellectual framework: if one can evaluate the
 accumulating evidence after every single observation, one can reach a
 decision with fewer subjects on average than any fixed-sample design.
 
 \subsection{Armitage and Sequential Medical
 Trials}\label{armitage-and-sequential-medical-trials}
 
-The application of Wald's ideas to medical research was championed by
-Armitage (1975), whose monograph \emph{Sequential Medical Trials} became
-the standard reference for what we now call fully sequential analysis.
-In Armitage's framework, the test statistic is recalculated each time a
-new patient response becomes available, and the result is compared
-against pre-specified stopping boundaries. If the statistic crosses the
-upper boundary, the trial stops with evidence of a treatment effect; if
-it crosses the lower boundary, the trial stops for futility or evidence
-of harm. Armitage developed restricted sequential procedures that
-imposed a maximum sample size, thereby addressing the theoretical
-concern that the open SPRT could run indefinitely under certain
-parameter configurations (Armitage 1969).
+The application of Wald's ideas to medical research was championed
+by\textsuperscript{\citeproc{ref-armitage1975sequential}{3}}, whose
+monograph \emph{Sequential Medical Trials} became the standard reference
+for what we now call fully sequential analysis. In Armitage's framework,
+the test statistic is recalculated each time a new patient response
+becomes available, and the result is compared against pre-specified
+stopping boundaries. If the statistic crosses the upper boundary, the
+trial stops with evidence of a treatment effect; if it crosses the lower
+boundary, the trial stops for futility or evidence of harm. Armitage
+developed restricted sequential procedures that imposed a maximum sample
+size, thereby addressing the theoretical concern that the open SPRT
+could run indefinitely under certain parameter
+configurations\textsuperscript{\citeproc{ref-armitage1969sequential}{4}}.
 
 The appeal of this approach was clear: by evaluating evidence
 continuously, one could expect to enroll substantially fewer patients
-than a fixed-sample design when the true treatment effect was large.
-Armitage (1991) later reflected on the evolution of interim analysis
-methods, noting both the strengths and the practical limitations that
-led the field toward alternative approaches.
+than a fixed-sample design when the true treatment effect was
+large.\textsuperscript{\citeproc{ref-armitage1991interim}{5}} later
+reflected on the evolution of interim analysis methods, noting both the
+strengths and the practical limitations that led the field toward
+alternative approaches.
 
 \subsection{The Group Sequential
 Revolution}\label{the-group-sequential-revolution}
 
 Despite the theoretical elegance of fully sequential procedures,
 practical considerations drove a fundamental shift in how clinical
-trials were monitored. Pocock (1977) proposed the group sequential
-approach, in which the test statistic is evaluated only at a small
-number of pre-planned interim analyses, each conducted after a group of
-patients has completed follow-up. Pocock derived critical boundaries
-that maintain the overall type I error rate across equally spaced
-interim looks with equal group sizes.
+trials were
+monitored.\textsuperscript{\citeproc{ref-pocock1977group}{6}} proposed
+the group sequential approach, in which the test statistic is evaluated
+only at a small number of pre-planned interim analyses, each conducted
+after a group of patients has completed follow-up. Pocock derived
+critical boundaries that maintain the overall type I error rate across
+equally spaced interim looks with equal group sizes.
 
-Shortly thereafter, O'Brien and Fleming (1979) introduced an alternative
-boundary shape that is now universally known as the O'Brien-Fleming
-boundary. Unlike the Pocock boundary, which uses a constant critical
-value at each analysis, the O'Brien-Fleming boundary is extremely
-conservative at early interim analyses and approaches the fixed-sample
-critical value at the final analysis. This property proved highly
-attractive in practice: it preserves nearly all of the power of a
+Shortly
+thereafter,\textsuperscript{\citeproc{ref-obrien1979multiple}{7}}
+introduced an alternative boundary shape that is now universally known
+as the O'Brien-Fleming boundary. Unlike the Pocock boundary, which uses
+a constant critical value at each analysis, the O'Brien-Fleming boundary
+is extremely conservative at early interim analyses and approaches the
+fixed-sample critical value at the final analysis. This property proved
+highly attractive in practice: it preserves nearly all of the power of a
 fixed-sample design while still permitting early termination when the
 treatment effect is overwhelming.
 
-The group sequential framework was further refined by Fleming et al.
-(1984), who developed a general class of boundary shapes parameterized
-to interpolate between the Pocock and O'Brien-Fleming extremes.
+The group sequential framework was further refined
+by\textsuperscript{\citeproc{ref-fleming1984designs}{8}}, who developed
+a general class of boundary shapes parameterized to interpolate between
+the Pocock and O'Brien-Fleming extremes.
 
 \subsection{The Alpha Spending
 Function}\label{the-alpha-spending-function}
 
 A crucial theoretical advance that ultimately bridged the gap between
 fully sequential and group sequential methods was the alpha spending
-function introduced by Lan and DeMets (1983). Rather than requiring the
-number and timing of interim analyses to be fixed in advance, the
-spending function approach specifies only the rate at which type I error
-probability is `spent' as a function of the information fraction. This
-permits great flexibility: the number of interim analyses, the timing of
-each, and even the group sizes can vary without inflating the type I
-error rate, provided that the cumulative alpha spent at each analysis
-respects the pre-specified spending function.
+function introduced
+by\textsuperscript{\citeproc{ref-lan1983discrete}{9}}. Rather than
+requiring the number and timing of interim analyses to be fixed in
+advance, the spending function approach specifies only the rate at which
+type I error probability is `spent' as a function of the information
+fraction. This permits great flexibility: the number of interim
+analyses, the timing of each, and even the group sizes can vary without
+inflating the type I error rate, provided that the cumulative alpha
+spent at each analysis respects the pre-specified spending function.
 
-DeMets and Lan (1994) provided a comprehensive exposition of the
-approach, demonstrating that Pocock- and O'Brien-Fleming-type boundaries
-can be recovered as special cases of particular spending functions. The
-Hwang-Shih-De Cani family of spending functions (Hwang et al. 1990)
+\textsuperscript{\citeproc{ref-demetsInterimAnalysisAlpha1994}{10}}
+provided a comprehensive exposition of the approach, demonstrating that
+Pocock- and O'Brien-Fleming-type boundaries can be recovered as special
+cases of particular spending functions. The Hwang-Shih-De Cani family of
+spending functions\textsuperscript{\citeproc{ref-hwang1990group}{11}}
 offered a further parameterization that encompasses a wide range of
 boundary shapes, including those more conservative than O'Brien-Fleming
 and those more aggressive than Pocock.
@@ -240,21 +244,24 @@ and those more aggressive than Pocock.
 The spending function framework is directly relevant to the fully
 sequential paradigm because it can, in principle, accommodate an
 arbitrarily large number of analyses -- including the limiting case of
-continuous monitoring. Betensky (1998) explicitly demonstrated the
-construction of a continuous stopping boundary from an alpha spending
-function, providing the mathematical machinery needed to implement fully
-sequential monitoring within the modern spending function framework.
-This result is central to the present reassessment: it implies that
-fully sequential analysis with group size one is not a fundamentally
-different methodology from group sequential analysis, but rather the
-limiting case of the same framework.
+continuous
+monitoring.\textsuperscript{\citeproc{ref-betensky1998continuous}{12}}
+explicitly demonstrated the construction of a continuous stopping
+boundary from an alpha spending function, providing the mathematical
+machinery needed to implement fully sequential monitoring within the
+modern spending function framework. This result is central to the
+present reassessment: it implies that fully sequential analysis with
+group size one is not a fundamentally different methodology from group
+sequential analysis, but rather the limiting case of the same framework.
 
 \subsection{The Triangular Test}\label{the-triangular-test}
 
-A parallel line of development was pursued by Whitehead and Stratton
-(1983), who proposed the triangular test as a sequential procedure that
-allows stopping for both efficacy and futility while maintaining
-approximately optimal expected sample size properties. Whitehead (1997)
+A parallel line of development was pursued
+by\textsuperscript{\citeproc{ref-whitehead1983triangular}{13}}, who
+proposed the triangular test as a sequential procedure that allows
+stopping for both efficacy and futility while maintaining approximately
+optimal expected sample size
+properties.\textsuperscript{\citeproc{ref-whitehead1997design}{14}}
 extended this into a comprehensive methodology for sequential clinical
 trials, including the double triangular test for two-sided alternatives.
 The triangular test occupies a conceptual middle ground between fully
@@ -262,11 +269,12 @@ sequential and group sequential methods: it permits frequent interim
 analyses (though not necessarily after every observation) and provides
 natural boundaries for both early stopping directions.
 
-Whitehead (2013) provided a valuable historical account of the evolution
-from Wald's SPRT through Armitage's restricted procedures to the group
-sequential and adaptive designs that dominate contemporary practice. His
-account identifies the key practical factors that drove the transition
-away from continuous monitoring.
+\textsuperscript{\citeproc{ref-whitehead2013evolution}{15}} provided a
+valuable historical account of the evolution from Wald's SPRT through
+Armitage's restricted procedures to the group sequential and adaptive
+designs that dominate contemporary practice. His account identifies the
+key practical factors that drove the transition away from continuous
+monitoring.
 
 \subsection{Why the Field Moved to Group Sequential
 Methods}\label{why-the-field-moved-to-group-sequential-methods}
@@ -311,73 +319,82 @@ Sequential}\label{comparison-of-fully-sequential-and-group-sequential}
 
 Approaches
 
-Sébille and Bellissant (2000) conducted a direct comparison of four
-sequential methods -- the SPRT, the triangular test, and one-parameter
-boundaries alongside Pocock and O'Brien-Fleming group sequential
-boundaries -- and evaluated their operating characteristics including
-expected sample size, power, and type I error control. Sébille and
-Bellissant (2003) provided a more comprehensive review contrasting
-strictly sequential methods with group sequential designs, concluding
-that the theoretical sample size savings of fully sequential methods are
-partially offset by their practical complexity.
+\textsuperscript{\citeproc{ref-sebille2000comparison}{16}} conducted a
+direct comparison of four sequential methods -- the SPRT, the triangular
+test, and one-parameter boundaries alongside Pocock and O'Brien-Fleming
+group sequential boundaries -- and evaluated their operating
+characteristics including expected sample size, power, and type I error
+control.\textsuperscript{\citeproc{ref-sebille2003sequential}{17}}
+provided a more comprehensive review contrasting strictly sequential
+methods with group sequential designs, concluding that the theoretical
+sample size savings of fully sequential methods are partially offset by
+their practical complexity.
 
-Lai et al. (1980) established that certain sequential stopping rules are
-asymptotically optimal from both Bayesian and frequentist perspectives,
-providing theoretical justification for continuous monitoring when it is
-feasible. Xiong (1996) extended the sequential conditional probability
-ratio test (SCPRT) framework to accommodate both continuous and group
-sequential monitoring within a unified approach, further demonstrating
-that the boundary between these paradigms is more fluid than the
-dichotomy might suggest.
+\textsuperscript{\citeproc{ref-lai1980sequential}{18}} established that
+certain sequential stopping rules are asymptotically optimal from both
+Bayesian and frequentist perspectives, providing theoretical
+justification for continuous monitoring when it is
+feasible.\textsuperscript{\citeproc{ref-xiong1996continuous}{19}}
+extended the sequential conditional probability ratio test (SCPRT)
+framework to accommodate both continuous and group sequential monitoring
+within a unified approach, further demonstrating that the boundary
+between these paradigms is more fluid than the dichotomy might suggest.
 
 \subsection{Post-Estimation
 Challenges}\label{post-estimation-challenges}
 
 A well-known complication of sequential analysis, whether fully
 sequential or group sequential, is that naive maximum likelihood
-estimates obtained at the stopping time are biased. Emerson and Fleming
-(1990) investigated parameter estimation following group sequential
-tests and proposed orderings of the sample space that yield improved
-point estimates and confidence intervals. These estimation challenges
-are shared by both paradigms, though the bias can be more pronounced
-under continuous monitoring because the test statistic is evaluated at a
+estimates obtained at the stopping time are
+biased.\textsuperscript{\citeproc{ref-emersonParameterEstimationFollowing1990}{20}}
+investigated parameter estimation following group sequential tests and
+proposed orderings of the sample space that yield improved point
+estimates and confidence intervals. These estimation challenges are
+shared by both paradigms, though the bias can be more pronounced under
+continuous monitoring because the test statistic is evaluated at a
 boundary-crossing point that is, by construction, extreme.
 
 \subsection{Modern Extensions: Longitudinal and Adaptive
 Designs}\label{modern-extensions-longitudinal-and-adaptive-designs}
 
 Recent work has extended group sequential methods to richer data
-structures. Jeffries and Geller (2015) considered longitudinal trials
-with adaptive choice of follow-up time, Jeffries et al. (2018)
+structures.\textsuperscript{\citeproc{ref-jeffriesLongitudinalClinicalTrials2015}{21}}
+considered longitudinal trials with adaptive choice of follow-up
+time,\textsuperscript{\citeproc{ref-jeffriesDetectingTreatmentDifferences2018}{22}}
 incorporated covariate adjustment in group sequential longitudinal
-studies, and Jeffries et al. (2023) further generalized these methods to
-multivariate longitudinal endpoints. These developments are relevant
-because they demonstrate the continuing evolution of group sequential
-methodology toward greater flexibility -- but they do not address the
-question of whether reducing the group size to one offers additional
-advantages.
+studies,
+and\textsuperscript{\citeproc{ref-jeffriesEvaluatingTreatmentEffects2023}{23}}
+further generalized these methods to multivariate longitudinal
+endpoints. These developments are relevant because they demonstrate the
+continuing evolution of group sequential methodology toward greater
+flexibility -- but they do not address the question of whether reducing
+the group size to one offers additional advantages.
 
-The broader adaptive design literature, as codified in Wassmer and
-Brannath (2016) and implemented in software such as rpact (Wassmer and
-Pahlke 2023) and gsDesign (Anderson 2022), has focused primarily on
-sample size re-estimation, treatment selection, and enrichment designs
--- adaptations that presuppose a group sequential monitoring structure.
+The broader adaptive design literature, as codified
+in\textsuperscript{\citeproc{ref-wassmer2016group}{24}} and implemented
+in software such as
+rpact\textsuperscript{\citeproc{ref-wassmer2023rpact}{25}} and
+gsDesign\textsuperscript{\citeproc{ref-anderson2022gsdesign}{26}}, has
+focused primarily on sample size re-estimation, treatment selection, and
+enrichment designs -- adaptations that presuppose a group sequential
+monitoring structure.
 
 \subsection{Safety Surveillance: A Revival of Continuous
 Monitoring}\label{safety-surveillance-a-revival-of-continuous-monitoring}
 
 One domain in which fully sequential (or near-fully sequential)
 monitoring has experienced a genuine revival is post-market safety
-surveillance. Kulkarni et al. (2016) compared continuous sequential
-analysis using the maximized sequential probability ratio test (maxSPRT)
-with group sequential methods for vaccine safety monitoring. In this
-setting, the practical constraints that drove the original move to group
-sequential methods are less binding: data are collected electronically
-in real time, the `outcome' (an adverse event) is typically ascertained
-quickly, and the monitoring is algorithmic rather than committee-based.
-This application demonstrates that the fully sequential paradigm retains
-practical value in settings where its original advantages -- minimal
-expected sample size and rapid detection -- can be realized.
+surveillance.\textsuperscript{\citeproc{ref-kulkarni2016continuous}{27}}
+compared continuous sequential analysis using the maximized sequential
+probability ratio test (maxSPRT) with group sequential methods for
+vaccine safety monitoring. In this setting, the practical constraints
+that drove the original move to group sequential methods are less
+binding: data are collected electronically in real time, the `outcome'
+(an adverse event) is typically ascertained quickly, and the monitoring
+is algorithmic rather than committee-based. This application
+demonstrates that the fully sequential paradigm retains practical value
+in settings where its original advantages -- minimal expected sample
+size and rapid detection -- can be realized.
 
 \subsection{Present Study}\label{present-study}
 
@@ -394,9 +411,10 @@ developments since the 1970s:
   Modern computing eliminates the historical computational barrier to
   continuous monitoring.
 \item
-  The alpha spending function framework (Lan and DeMets 1983; DeMets and
-  Lan 1994) provides a rigorous theoretical foundation for continuous
-  monitoring that controls type I error.
+  The alpha spending function
+  framework\textsuperscript{\citeproc{ref-lan1983discrete}{9},\citeproc{ref-demetsInterimAnalysisAlpha1994}{10}}
+  provides a rigorous theoretical foundation for continuous monitoring
+  that controls type I error.
 \item
   Electronic data capture and real-time data pipelines have reduced the
   logistical barriers to rapid data aggregation.
@@ -552,21 +570,24 @@ monitoring.
 
 From a purely statistical perspective, the fully sequential design
 (group size one) represents the limiting case of the group sequential
-framework and, as predicted by the classical theory (Wald 1947; Armitage
-1975), achieves the lowest expected sample size when the true treatment
-effect is large. However, the marginal gain from moving from five
-interim analyses to continuous monitoring is modest, consistent with the
+framework and, as predicted by the classical
+theory\textsuperscript{\citeproc{ref-wald1947sequential}{2},\citeproc{ref-armitage1975sequential}{3}},
+achieves the lowest expected sample size when the true treatment effect
+is large. However, the marginal gain from moving from five interim
+analyses to continuous monitoring is modest, consistent with the
 well-known result that most of the efficiency benefit of sequential
-monitoring is captured by the first few interim analyses (Jennison and
-Turnbull 2000, chap. 7).
+monitoring is captured by the first few interim
+analyses\textsuperscript{\citeproc{ref-jennison2000group}{28(chap7)}}.
 
-The alpha spending function framework (Lan and DeMets 1983; DeMets and
-Lan 1994) provides the theoretical foundation that makes fully
-sequential monitoring rigorous within the modern inferential framework.
-Betensky (1998) demonstrated that continuous stopping boundaries can be
-constructed directly from spending functions, and the simulation results
-confirm that type I error is controlled at the nominal level under
-continuous monitoring.
+The alpha spending function
+framework\textsuperscript{\citeproc{ref-lan1983discrete}{9},\citeproc{ref-demetsInterimAnalysisAlpha1994}{10}}
+provides the theoretical foundation that makes fully sequential
+monitoring rigorous within the modern inferential
+framework.\textsuperscript{\citeproc{ref-betensky1998continuous}{12}}
+demonstrated that continuous stopping boundaries can be constructed
+directly from spending functions, and the simulation results confirm
+that type I error is controlled at the nominal level under continuous
+monitoring.
 
 The practical arguments against fully sequential monitoring --
 multi-center logistics, delayed outcomes, DSMB governance -- remain
@@ -592,20 +613,22 @@ features of the clinical trial landscape may narrow the practical gap:
 \end{itemize}
 
 The revival of continuous sequential monitoring in post-market safety
-surveillance (Kulkarni et al. 2016) demonstrates that the approach is
-already viable in settings that share some of these characteristics.
-Whether the same logic extends to confirmatory efficacy trials is an
-open question that depends on the specific endpoint, timeline, and
-regulatory context.
+surveillance\textsuperscript{\citeproc{ref-kulkarni2016continuous}{27}}
+demonstrates that the approach is already viable in settings that share
+some of these characteristics. Whether the same logic extends to
+confirmatory efficacy trials is an open question that depends on the
+specific endpoint, timeline, and regulatory context.
 
-The comparison of sequential approaches by Sébille and Bellissant (2000)
-and Sébille and Bellissant (2003) supports the conclusion that the
-choice between fully sequential and group sequential monitoring is
-driven more by practical logistics than by statistical efficiency. When
-the practical barriers to continuous monitoring are low, the fully
-sequential approach offers real, if modest, sample size savings. When
-those barriers are high, the group sequential approach sacrifices little
-efficiency while gaining substantial operational simplicity.
+The comparison of sequential approaches
+by\textsuperscript{\citeproc{ref-sebille2000comparison}{16}}
+and\textsuperscript{\citeproc{ref-sebille2003sequential}{17}} supports
+the conclusion that the choice between fully sequential and group
+sequential monitoring is driven more by practical logistics than by
+statistical efficiency. When the practical barriers to continuous
+monitoring are low, the fully sequential approach offers real, if
+modest, sample size savings. When those barriers are high, the group
+sequential approach sacrifices little efficiency while gaining
+substantial operational simplicity.
 
 \subsection{Limitations}\label{limitations}
 
@@ -613,8 +636,9 @@ This analysis considers only a two-arm trial with a continuous endpoint
 and known variance. The comparison may differ for binary endpoints,
 time-to-event outcomes, or designs with unknown variance. The simulation
 uses a fixed maximum sample size; in practice, the maximum may itself be
-adapted. The post-estimation bias issue (Emerson and Fleming 1990) is
-acknowledged but not directly evaluated here.
+adapted. The post-estimation bias
+issue\textsuperscript{\citeproc{ref-emersonParameterEstimationFollowing1990}{20}}
+is acknowledged but not directly evaluated here.
 
 \section{Future Research}\label{future-research}
 
@@ -623,15 +647,15 @@ acknowledged but not directly evaluated here.
 \item
   \textbf{Extension to time-to-event endpoints.} The fully sequential
   paradigm is naturally suited to event-driven analyses; the connection
-  between continuous monitoring and the calendar-time spending function
-  (Lan and DeMets 1983) warrants formal evaluation in the survival
-  setting.
+  between continuous monitoring and the calendar-time spending
+  function\textsuperscript{\citeproc{ref-lan1983discrete}{9}} warrants
+  formal evaluation in the survival setting.
 \item
   \textbf{Integration with adaptive sample size re-estimation.}
   Combining continuous monitoring with unblinded sample size
-  re-estimation (Wassmer and Brannath 2016) could yield designs that
-  adapt both the monitoring frequency and the maximum sample size as
-  data accumulate.
+  re-estimation\textsuperscript{\citeproc{ref-wassmer2016group}{24}}
+  could yield designs that adapt both the monitoring frequency and the
+  maximum sample size as data accumulate.
 \item
   \textbf{Bayesian continuous monitoring.} The Bayesian sequential
   framework offers a natural continuous monitoring approach via
@@ -639,11 +663,12 @@ acknowledged but not directly evaluated here.
   monitoring with frequentist fully sequential designs would clarify the
   relative advantages.
 \item
-  \textbf{Software development.} While gsDesign (Anderson 2022) and
-  rpact (Wassmer and Pahlke 2023) support many interim analyses,
-  dedicated tools for fully sequential (K = N) design with spending
-  function boundaries and bias-adjusted estimation would facilitate
-  practical adoption.
+  \textbf{Software development.} While
+  gsDesign\textsuperscript{\citeproc{ref-anderson2022gsdesign}{26}} and
+  rpact\textsuperscript{\citeproc{ref-wassmer2023rpact}{25}} support
+  many interim analyses, dedicated tools for fully sequential (K = N)
+  design with spending function boundaries and bias-adjusted estimation
+  would facilitate practical adoption.
 \item
   \textbf{Regulatory considerations.} Engagement with regulatory
   agencies on the acceptability of fully sequential designs,
@@ -653,7 +678,7 @@ acknowledged but not directly evaluated here.
   \textbf{Post-estimation methods.} Development and evaluation of
   bias-corrected estimators and confidence intervals specifically
   tailored to the fully sequential setting, building on Emerson and
-  Fleming (1990).
+  Fleming\textsuperscript{\citeproc{ref-emersonParameterEstimationFollowing1990}{20}}.
 \item
   \textbf{Decentralized trials.} The growing use of decentralized trial
   platforms with real-time data capture creates a natural testbed for
@@ -747,18 +772,18 @@ Monitoring}\label{bias-under-high-frequency-monitoring}
 \end{figure}
 
 A well-known consequence of optional stopping is that the naive maximum
-likelihood estimate at the stopping time is biased away from the null
-(Emerson and Fleming 1990). The figure above confirms that this bias
-grows with K: more frequent monitoring creates more opportunities for
-the test statistic to cross the boundary at an extreme realization.
-However, two observations temper this concern. First, the absolute
-magnitude of the bias remains modest even at K = 200. Second, the bias
-is a known and correctable phenomenon. Several approaches to
-bias-corrected estimation following sequential monitoring have been
-developed, including median unbiased estimation, conditional MLE
-methods, and bootstrap-based corrections. Practical adoption of
-high-frequency monitoring will require that these methods be packaged
-into accessible software rather than remaining the province of
+likelihood estimate at the stopping time is biased away from the
+null\textsuperscript{\citeproc{ref-emersonParameterEstimationFollowing1990}{20}}.
+The figure above confirms that this bias grows with K: more frequent
+monitoring creates more opportunities for the test statistic to cross
+the boundary at an extreme realization. However, two observations temper
+this concern. First, the absolute magnitude of the bias remains modest
+even at K = 200. Second, the bias is a known and correctable phenomenon.
+Several approaches to bias-corrected estimation following sequential
+monitoring have been developed, including median unbiased estimation,
+conditional MLE methods, and bootstrap-based corrections. Practical
+adoption of high-frequency monitoring will require that these methods be
+packaged into accessible software rather than remaining the province of
 methodological specialists.
 
 \subsection{A Software Architecture for
@@ -766,23 +791,26 @@ High-Frequency}\label{a-software-architecture-for-high-frequency}
 
 Monitoring
 
-The current generation of group sequential software -- gsDesign
-(Anderson 2022), rpact (Wassmer and Pahlke 2023), and the Lan-DeMets
-boundary programs -- was designed for the K = 3--5 regime. While these
-tools can technically accommodate larger K, they were not optimized for
-it. A purpose-built system for high-frequency monitoring would require
-three components:
+The current generation of group sequential software --
+gsDesign\textsuperscript{\citeproc{ref-anderson2022gsdesign}{26}},
+rpact\textsuperscript{\citeproc{ref-wassmer2023rpact}{25}}, and the
+Lan-DeMets boundary programs -- was designed for the K = 3--5 regime.
+While these tools can technically accommodate larger K, they were not
+optimized for it. A purpose-built system for high-frequency monitoring
+would require three components:
 
 \textbf{Boundary computation engine.} The spending function must be
 evaluated at K = 20--50 information fractions, and the corresponding
 critical boundaries computed via numerical integration or recursive
 application of the multivariate normal distribution. For moderate K (up
-to 50), existing algorithms based on the work of Jennison and Turnbull
-(2000) scale adequately. For K approaching N, direct computation becomes
-prohibitive and the continuous boundary approximation of Betensky (1998)
-should be used instead. A practical implementation would pre-compute
-boundaries for a fine grid of information fractions and interpolate at
-the actual analysis times.
+to 50), existing algorithms based on the work
+of\textsuperscript{\citeproc{ref-jennison2000group}{28}} scale
+adequately. For K approaching N, direct computation becomes prohibitive
+and the continuous boundary approximation
+of\textsuperscript{\citeproc{ref-betensky1998continuous}{12}} should be
+used instead. A practical implementation would pre-compute boundaries
+for a fine grid of information fractions and interpolate at the actual
+analysis times.
 
 \textbf{Bias-corrected estimation module.} At each interim analysis, the
 system should report not only the naive test statistic and p-value but
@@ -900,151 +928,182 @@ the following concrete recommendations:
 \addcontentsline{toc}{section}{References}
 
 \protect\phantomsection\label{refs}
-\begin{CSLReferences}{1}{1}
-\bibitem[\citeproctext]{ref-anderson2022gsdesign}
-Anderson, Keaven. 2022. \emph{{gsDesign}: Group Sequential Design}.
-\url{https://CRAN.R-project.org/package=gsDesign}.
-
-\bibitem[\citeproctext]{ref-armitage1969sequential}
-Armitage, Peter. 1969. {``Sequential Analysis in Therapeutic Trials.''}
-\emph{Annual Review of Medicine} 20: 425--30.
-\url{https://doi.org/10.1146/annurev.me.20.020169.002233}.
-
-\bibitem[\citeproctext]{ref-armitage1975sequential}
-Armitage, Peter. 1975. \emph{Sequential Medical Trials}. 2nd ed.
-Blackwell.
-
-\bibitem[\citeproctext]{ref-armitage1991interim}
-Armitage, Peter. 1991. {``Interim Analysis in Clinical Trials.''}
-\emph{Statistics in Medicine} 10 (6): 925--37.
-\url{https://doi.org/10.1002/sim.4780100613}.
-
-\bibitem[\citeproctext]{ref-betensky1998continuous}
-Betensky, Rebecca A. 1998. {``Construction of a Continuous Stopping
-Boundary from an Alpha Spending Function.''} \emph{Biometrics} 54 (3):
-1061--71. \url{https://doi.org/10.2307/2533858}.
-
-\bibitem[\citeproctext]{ref-demetsInterimAnalysisAlpha1994}
-DeMets, David L., and K. K. Gordon Lan. 1994. {``Interim Analysis: The
-Alpha Spending Function Approach.''} \emph{Statistics in Medicine} 13
-(13--14): 1341--52. \url{https://doi.org/10.1002/sim.4780131308}.
-
-\bibitem[\citeproctext]{ref-emersonParameterEstimationFollowing1990}
-Emerson, Scott S., and Thomas R. Fleming. 1990. {``Parameter Estimation
-Following Group Sequential Hypothesis Testing.''} \emph{Biometrika} 77
-(4): 875--92. \url{https://doi.org/10.1093/biomet/77.4.875}.
-
-\bibitem[\citeproctext]{ref-fleming1984designs}
-Fleming, Thomas R., David P. Harrington, and Peter C. O'Brien. 1984.
-{``Designs for Group Sequential Tests.''} \emph{Controlled Clinical
-Trials} 5 (4): 348--61.
-\url{https://doi.org/10.1016/S0197-2456(84)80014-8}.
-
-\bibitem[\citeproctext]{ref-hwang1990group}
-Hwang, Irving K., Weichung Joe Shih, and John S. De Cani. 1990. {``Group
-Sequential Designs Using a Family of Type {I} Error Probability Spending
-Functions.''} \emph{Statistics in Medicine} 9 (12): 1439--45.
-\url{https://doi.org/10.1002/sim.4780091207}.
-
-\bibitem[\citeproctext]{ref-jeffriesDetectingTreatmentDifferences2018}
-Jeffries, Neal O., James F. Troendle, and Nancy L. Geller. 2018.
-{``Detecting Treatment Differences in Group Sequential Longitudinal
-Studies with Covariate Adjustment.''} \emph{Biometrics} 74 (3):
-1072--81. \url{https://doi.org/10.1111/biom.12837}.
-
-\bibitem[\citeproctext]{ref-jeffriesEvaluatingTreatmentEffects2023}
-Jeffries, Neal O., James F. Troendle, and Nancy L. Geller. 2023.
-{``Evaluating Treatment Effects in Group Sequential Multivariate
-Longitudinal Studies with Covariate Adjustment.''} \emph{Biometrics} 79
-(2): 1496--506. \url{https://doi.org/10.1111/biom.13659}.
-
-\bibitem[\citeproctext]{ref-jeffriesLongitudinalClinicalTrials2015}
-Jeffries, Neal, and Nancy L. Geller. 2015. {``Longitudinal Clinical
-Trials with Adaptive Choice of Follow-up Time.''} \emph{Biometrics} 71
-(2): 469--77. \url{https://doi.org/10.1111/biom.12287}.
-
-\bibitem[\citeproctext]{ref-jennison2000group}
-Jennison, Christopher, and Bruce W. Turnbull. 2000. \emph{Group
-Sequential Methods with Applications to Clinical Trials}. Chapman;
-Hall/CRC.
-
-\bibitem[\citeproctext]{ref-kulkarni2016continuous}
-Kulkarni, Pandurang M., Ivair R. Silva, and Matthew R. Buras. 2016.
-{``Continuous Versus Group Sequential Analysis for Post-Market Drug and
-Vaccine Safety Surveillance.''} \emph{Statistics in Medicine}, ahead of
-print. \url{https://doi.org/10.1002/sim.6989}.
-
-\bibitem[\citeproctext]{ref-lai1980sequential}
-Lai, Tze Leung, Bruce Levin, Herbert Robbins, and David Siegmund. 1980.
-{``Sequential Medical Trials.''} \emph{Proceedings of the National
-Academy of Sciences} 77 (6): 3135--38.
-\url{https://doi.org/10.1073/pnas.77.6.3135}.
-
-\bibitem[\citeproctext]{ref-lan1983discrete}
-Lan, K. K. Gordon, and David L. DeMets. 1983. {``Discrete Sequential
-Boundaries for Clinical Trials.''} \emph{Biometrika} 70 (3): 659--63.
-\url{https://doi.org/10.1093/biomet/70.3.659}.
-
-\bibitem[\citeproctext]{ref-obrien1979multiple}
-O'Brien, Peter C., and Thomas R. Fleming. 1979. {``A Multiple Testing
-Procedure for Clinical Trials.''} \emph{Biometrics} 35 (3): 549--56.
-\url{https://doi.org/10.2307/2530245}.
-
-\bibitem[\citeproctext]{ref-pocock1977group}
-Pocock, Stuart J. 1977. {``Group Sequential Methods in the Design and
-Analysis of Clinical Trials.''} \emph{Biometrika} 64 (2): 191--99.
-\url{https://doi.org/10.1093/biomet/64.2.191}.
-
-\bibitem[\citeproctext]{ref-sebille2000comparison}
-Sébille, Véronique, and Eric Bellissant. 2000. {``Comparison of Four
-Sequential Methods Allowing for Early Stopping of Comparative Clinical
-Trials.''} \emph{Clinical Science} 98 (5): 569--78.
-\url{https://doi.org/10.1042/cs0980569}.
-
-\bibitem[\citeproctext]{ref-sebille2003sequential}
-Sébille, Véronique, and Eric Bellissant. 2003. {``Sequential Methods and
-Group Sequential Designs for Comparative Clinical Trials.''}
-\emph{Fundamental and Clinical Pharmacology} 17 (5): 505--16.
-\url{https://doi.org/10.1046/j.1472-8206.2003.00192.x}.
-
+\begin{CSLReferences}{0}{1}
 \bibitem[\citeproctext]{ref-wald1945sequential}
-Wald, Abraham. 1945. {``Sequential Tests of Statistical Hypotheses.''}
-\emph{Annals of Mathematical Statistics} 16 (2): 117--86.
-\url{https://doi.org/10.1214/aoms/1177731118}.
+\CSLLeftMargin{1. }%
+\CSLRightInline{Wald A. Sequential tests of statistical hypotheses.
+\emph{Annals of Mathematical Statistics}. 1945;16(2):117-186.
+doi:\href{https://doi.org/10.1214/aoms/1177731118}{10.1214/aoms/1177731118}}
 
 \bibitem[\citeproctext]{ref-wald1947sequential}
-Wald, Abraham. 1947. \emph{Sequential Analysis}. Wiley.
+\CSLLeftMargin{2. }%
+\CSLRightInline{Wald A. \emph{Sequential Analysis}. Wiley; 1947.}
 
-\bibitem[\citeproctext]{ref-wassmer2016group}
-Wassmer, Gernot, and Werner Brannath. 2016. \emph{Group Sequential and
-Confirmatory Adaptive Designs in Clinical Trials}. Springer.
-\url{https://doi.org/10.1007/978-3-319-32562-0}.
+\bibitem[\citeproctext]{ref-armitage1975sequential}
+\CSLLeftMargin{3. }%
+\CSLRightInline{Armitage P. \emph{Sequential Medical Trials}. 2nd ed.
+Blackwell; 1975.}
 
-\bibitem[\citeproctext]{ref-wassmer2023rpact}
-Wassmer, Gernot, and Friedrich Pahlke. 2023. \emph{{rpact}: Confirmatory
-Adaptive Clinical Trial Design, Simulation, and Analysis}.
-\url{https://www.rpact.org/}.
+\bibitem[\citeproctext]{ref-armitage1969sequential}
+\CSLLeftMargin{4. }%
+\CSLRightInline{Armitage P. Sequential analysis in therapeutic trials.
+\emph{Annual Review of Medicine}. 1969;20:425-430.
+doi:\href{https://doi.org/10.1146/annurev.me.20.020169.002233}{10.1146/annurev.me.20.020169.002233}}
 
-\bibitem[\citeproctext]{ref-whitehead1997design}
-Whitehead, John. 1997. \emph{The Design and Analysis of Sequential
-Clinical Trials}. 2nd revised. Wiley.
+\bibitem[\citeproctext]{ref-armitage1991interim}
+\CSLLeftMargin{5. }%
+\CSLRightInline{Armitage P. Interim analysis in clinical trials.
+\emph{Statistics in Medicine}. 1991;10(6):925-937.
+doi:\href{https://doi.org/10.1002/sim.4780100613}{10.1002/sim.4780100613}}
 
-\bibitem[\citeproctext]{ref-whitehead2013evolution}
-Whitehead, John. 2013. {``The Evolution of Ways of Deciding When
-Clinical Trials Should Stop Recruiting.''} \emph{Journal of the Royal
-Statistical Society, Series A}, ahead of print.
-\url{https://doi.org/10.1111/rssa.12031}.
+\bibitem[\citeproctext]{ref-pocock1977group}
+\CSLLeftMargin{6. }%
+\CSLRightInline{Pocock SJ. Group sequential methods in the design and
+analysis of clinical trials. \emph{Biometrika}. 1977;64(2):191-199.
+doi:\href{https://doi.org/10.1093/biomet/64.2.191}{10.1093/biomet/64.2.191}}
+
+\bibitem[\citeproctext]{ref-obrien1979multiple}
+\CSLLeftMargin{7. }%
+\CSLRightInline{O'Brien PC, Fleming TR. A multiple testing procedure for
+clinical trials. \emph{Biometrics}. 1979;35(3):549-556.
+doi:\href{https://doi.org/10.2307/2530245}{10.2307/2530245}}
+
+\bibitem[\citeproctext]{ref-fleming1984designs}
+\CSLLeftMargin{8. }%
+\CSLRightInline{Fleming TR, Harrington DP, O'Brien PC. Designs for group
+sequential tests. \emph{Controlled Clinical Trials}. 1984;5(4):348-361.
+doi:\href{https://doi.org/10.1016/S0197-2456(84)80014-8}{10.1016/S0197-2456(84)80014-8}}
+
+\bibitem[\citeproctext]{ref-lan1983discrete}
+\CSLLeftMargin{9. }%
+\CSLRightInline{Lan KKG, DeMets DL. Discrete sequential boundaries for
+clinical trials. \emph{Biometrika}. 1983;70(3):659-663.
+doi:\href{https://doi.org/10.1093/biomet/70.3.659}{10.1093/biomet/70.3.659}}
+
+\bibitem[\citeproctext]{ref-demetsInterimAnalysisAlpha1994}
+\CSLLeftMargin{10. }%
+\CSLRightInline{DeMets DL, Lan KKG. Interim analysis: The alpha spending
+function approach. \emph{Statistics in Medicine}.
+1994;13(13--14):1341-1352.
+doi:\href{https://doi.org/10.1002/sim.4780131308}{10.1002/sim.4780131308}}
+
+\bibitem[\citeproctext]{ref-hwang1990group}
+\CSLLeftMargin{11. }%
+\CSLRightInline{Hwang IK, Shih WJ, De Cani JS. Group sequential designs
+using a family of type {I} error probability spending functions.
+\emph{Statistics in Medicine}. 1990;9(12):1439-1445.
+doi:\href{https://doi.org/10.1002/sim.4780091207}{10.1002/sim.4780091207}}
+
+\bibitem[\citeproctext]{ref-betensky1998continuous}
+\CSLLeftMargin{12. }%
+\CSLRightInline{Betensky RA. Construction of a continuous stopping
+boundary from an alpha spending function. \emph{Biometrics}.
+1998;54(3):1061-1071.
+doi:\href{https://doi.org/10.2307/2533858}{10.2307/2533858}}
 
 \bibitem[\citeproctext]{ref-whitehead1983triangular}
-Whitehead, John, and Irene Stratton. 1983. {``Group Sequential Clinical
-Trials with Triangular Continuation Regions.''} \emph{Biometrics} 39
-(1): 227--36. \url{https://doi.org/10.2307/2530822}.
+\CSLLeftMargin{13. }%
+\CSLRightInline{Whitehead J, Stratton I. Group sequential clinical
+trials with triangular continuation regions. \emph{Biometrics}.
+1983;39(1):227-236.
+doi:\href{https://doi.org/10.2307/2530822}{10.2307/2530822}}
+
+\bibitem[\citeproctext]{ref-whitehead1997design}
+\CSLLeftMargin{14. }%
+\CSLRightInline{Whitehead J. \emph{The Design and Analysis of Sequential
+Clinical Trials}. 2nd revised. Wiley; 1997.}
+
+\bibitem[\citeproctext]{ref-whitehead2013evolution}
+\CSLLeftMargin{15. }%
+\CSLRightInline{Whitehead J. The evolution of ways of deciding when
+clinical trials should stop recruiting. \emph{Journal of the Royal
+Statistical Society, Series A}. Published online 2013.
+doi:\href{https://doi.org/10.1111/rssa.12031}{10.1111/rssa.12031}}
+
+\bibitem[\citeproctext]{ref-sebille2000comparison}
+\CSLLeftMargin{16. }%
+\CSLRightInline{Sébille V, Bellissant E. Comparison of four sequential
+methods allowing for early stopping of comparative clinical trials.
+\emph{Clinical Science}. 2000;98(5):569-578.
+doi:\href{https://doi.org/10.1042/cs0980569}{10.1042/cs0980569}}
+
+\bibitem[\citeproctext]{ref-sebille2003sequential}
+\CSLLeftMargin{17. }%
+\CSLRightInline{Sébille V, Bellissant E. Sequential methods and group
+sequential designs for comparative clinical trials. \emph{Fundamental
+and Clinical Pharmacology}. 2003;17(5):505-516.
+doi:\href{https://doi.org/10.1046/j.1472-8206.2003.00192.x}{10.1046/j.1472-8206.2003.00192.x}}
+
+\bibitem[\citeproctext]{ref-lai1980sequential}
+\CSLLeftMargin{18. }%
+\CSLRightInline{Lai TL, Levin B, Robbins H, Siegmund D. Sequential
+medical trials. \emph{Proceedings of the National Academy of Sciences}.
+1980;77(6):3135-3138.
+doi:\href{https://doi.org/10.1073/pnas.77.6.3135}{10.1073/pnas.77.6.3135}}
 
 \bibitem[\citeproctext]{ref-xiong1996continuous}
-Xiong, Xiaoping. 1996. {``Continuous and Group Sequential Conditional
-Probability Ratio Tests for Phase {II} Clinical Trials.''}
-\emph{Statistics in Medicine} 15 (19): 2037--51.
-\url{https://doi.org/10.1002/(SICI)1097-0258(19961015)15:19\%3C2037::AID-SIM339\%3E3.0.CO;2-Z}.
+\CSLLeftMargin{19. }%
+\CSLRightInline{Xiong X. Continuous and group sequential conditional
+probability ratio tests for phase {II} clinical trials. \emph{Statistics
+in Medicine}. 1996;15(19):2037-2051.
+doi:\href{https://doi.org/10.1002/(SICI)1097-0258(19961015)15:19\%3C2037::AID-SIM339\%3E3.0.CO;2-Z}{10.1002/(SICI)1097-0258(19961015)15:19\textless2037::AID-SIM339\textgreater3.0.CO;2-Z}}
+
+\bibitem[\citeproctext]{ref-emersonParameterEstimationFollowing1990}
+\CSLLeftMargin{20. }%
+\CSLRightInline{Emerson SS, Fleming TR. Parameter estimation following
+group sequential hypothesis testing. \emph{Biometrika}.
+1990;77(4):875-892.
+doi:\href{https://doi.org/10.1093/biomet/77.4.875}{10.1093/biomet/77.4.875}}
+
+\bibitem[\citeproctext]{ref-jeffriesLongitudinalClinicalTrials2015}
+\CSLLeftMargin{21. }%
+\CSLRightInline{Jeffries N, Geller NL. Longitudinal clinical trials with
+adaptive choice of follow-up time. \emph{Biometrics}.
+2015;71(2):469-477.
+doi:\href{https://doi.org/10.1111/biom.12287}{10.1111/biom.12287}}
+
+\bibitem[\citeproctext]{ref-jeffriesDetectingTreatmentDifferences2018}
+\CSLLeftMargin{22. }%
+\CSLRightInline{Jeffries NO, Troendle JF, Geller NL. Detecting treatment
+differences in group sequential longitudinal studies with covariate
+adjustment. \emph{Biometrics}. 2018;74(3):1072-1081.
+doi:\href{https://doi.org/10.1111/biom.12837}{10.1111/biom.12837}}
+
+\bibitem[\citeproctext]{ref-jeffriesEvaluatingTreatmentEffects2023}
+\CSLLeftMargin{23. }%
+\CSLRightInline{Jeffries NO, Troendle JF, Geller NL. Evaluating
+treatment effects in group sequential multivariate longitudinal studies
+with covariate adjustment. \emph{Biometrics}. 2023;79(2):1496-1506.
+doi:\href{https://doi.org/10.1111/biom.13659}{10.1111/biom.13659}}
+
+\bibitem[\citeproctext]{ref-wassmer2016group}
+\CSLLeftMargin{24. }%
+\CSLRightInline{Wassmer G, Brannath W. \emph{Group Sequential and
+Confirmatory Adaptive Designs in Clinical Trials}. Springer; 2016.
+doi:\href{https://doi.org/10.1007/978-3-319-32562-0}{10.1007/978-3-319-32562-0}}
+
+\bibitem[\citeproctext]{ref-wassmer2023rpact}
+\CSLLeftMargin{25. }%
+\CSLRightInline{Wassmer G, Pahlke F. \emph{{rpact}: Confirmatory
+Adaptive Clinical Trial Design, Simulation, and Analysis}.; 2023.
+\url{https://www.rpact.org/}}
+
+\bibitem[\citeproctext]{ref-anderson2022gsdesign}
+\CSLLeftMargin{26. }%
+\CSLRightInline{Anderson K. \emph{{gsDesign}: Group Sequential Design}.;
+2022. \url{https://CRAN.R-project.org/package=gsDesign}}
+
+\bibitem[\citeproctext]{ref-kulkarni2016continuous}
+\CSLLeftMargin{27. }%
+\CSLRightInline{Kulkarni PM, Silva IR, Buras MR. Continuous versus group
+sequential analysis for post-market drug and vaccine safety
+surveillance. \emph{Statistics in Medicine}. Published online 2016.
+doi:\href{https://doi.org/10.1002/sim.6989}{10.1002/sim.6989}}
+
+\bibitem[\citeproctext]{ref-jennison2000group}
+\CSLLeftMargin{28. }%
+\CSLRightInline{Jennison C, Turnbull BW. \emph{Group Sequential Methods
+with Applications to Clinical Trials}. Chapman; Hall/CRC; 2000.}
 
 \end{CSLReferences}
 

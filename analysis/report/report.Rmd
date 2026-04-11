@@ -44,13 +44,6 @@ abstract: |
   continuous sequential monitoring has already been
   revived, and considers whether similar arguments
   extend to confirmatory efficacy trials.
-keywords:
-  - "sequential analysis"
-  - "SPRT"
-  - "group sequential design"
-  - "alpha spending function"
-  - "clinical trial monitoring"
-  - "continuous monitoring"
 ---
 
 ```{r setup, include=FALSE}
