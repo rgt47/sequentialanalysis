@@ -75,6 +75,9 @@ run_hf_simulation <- function(n_max = 200,
                               n_reps = 2000,
                               k_values = c(3, 5, 10,
                                 20, 50, 200)) {
+  # Morris et al. (2019) Table 6: Monte Carlo SEs accompany every
+  # performance estimate. The caller sets the seed once, so the
+  # replications across k_values draw from a single shared stream.
   results <- map_dfr(k_values, function(k) {
     bnd <- compute_boundaries(k, n_max)
     reps <- map_dfr(seq_len(n_reps), function(i) {
@@ -86,23 +89,33 @@ run_hf_simulation <- function(n_max = 200,
     })
 
     bias_naive <- mean(reps$mle_at_stop) - delta
-    bias_final <- mean(
-      ifelse(reps$stop_n < n_max,
-        reps$mle_at_stop, reps$final_mle)
-    ) - delta
+    rmse_naive <- sqrt(mean((reps$mle_at_stop - delta)^2))
+    rej <- mean(reps$rejected)
+
+    # Guards: mcse_rmse_naive needs rmse_naive > 0 and n_reps >= 1.
+    mcse_rmse_val <- if (n_reps >= 1 && rmse_naive > 0) {
+      sqrt(
+        stats::var((reps$mle_at_stop - delta)^2) / n_reps
+      ) / (2 * rmse_naive)
+    } else NA_real_
 
     tibble(
       k = k,
       label = ifelse(k == n_max, "Fully Seq",
         paste0("K=", k)),
-      rejection_rate = mean(reps$rejected),
+      n_reps = n_reps,
+      rejection_rate = rej,
+      mcse_rejection = sqrt(rej * (1 - rej) / n_reps),
       mean_n = mean(reps$stop_n),
-      median_n = median(reps$stop_n),
-      sd_n = sd(reps$stop_n),
+      mcse_mean_n = stats::sd(reps$stop_n) / sqrt(n_reps),
+      median_n = stats::median(reps$stop_n),
+      sd_n = stats::sd(reps$stop_n),
       mean_mle = mean(reps$mle_at_stop),
       bias_naive = bias_naive,
-      rmse_naive = sqrt(mean(
-        (reps$mle_at_stop - delta)^2)),
+      mcse_bias_naive = stats::sd(reps$mle_at_stop) /
+        sqrt(n_reps),
+      rmse_naive = rmse_naive,
+      mcse_rmse_naive = mcse_rmse_val,
       pct_saving = (1 - mean(reps$stop_n) /
         n_max) * 100
     )
@@ -154,6 +167,8 @@ run_simulation <- function(n_max = 200,
                            n_reps = 2000,
                            designs = c("fixed", "gs3",
                              "gs5", "fully_seq")) {
+  # Morris et al. (2019) Table 6: Monte Carlo SEs are attached to
+  # every reported performance estimate below.
   design_specs <- list(
     fixed = list(k = 1, label = "Fixed"),
     gs3 = list(k = 3, label = "GS (K=3)"),
@@ -185,10 +200,15 @@ run_simulation <- function(n_max = 200,
             bounds = bnd
           )
         })
+        rej <- mean(reps$rejected)
         tibble(
-          rejection_rate = mean(reps$rejected),
+          n_reps = n_reps,
+          rejection_rate = rej,
+          mcse_rejection = sqrt(rej * (1 - rej) / n_reps),
           mean_n = mean(reps$stop_n),
-          median_n = median(reps$stop_n),
+          mcse_mean_n = stats::sd(reps$stop_n) /
+            sqrt(n_reps),
+          median_n = stats::median(reps$stop_n),
           stop_fractions = list(reps$stop_fraction)
         )
       })) |>

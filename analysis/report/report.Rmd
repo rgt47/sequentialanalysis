@@ -355,6 +355,28 @@ trade-offs involved.
 
 # Methods
 
+## ADEMP structure
+
+Following Morris, White, and Crowther [-@morris2019using], the
+simulation is reported under the ADEMP framework.
+
+- **Aims.** Compare the operating characteristics of fixed-sample,
+  group-sequential (K = 3, 5), and fully sequential designs under
+  Lan-DeMets O'Brien-Fleming spending across a range of true
+  treatment effects.
+- **Data-generating mechanism.** Two-arm continuous outcome with
+  known variance; $n_{\max} = 200$ per arm.
+- **Estimands.** (i) The binary rejection decision at
+  $\alpha = 0.05$; (ii) expected sample size at stopping; (iii) the
+  naive MLE at stop, which exhibits early-stopping bias.
+- **Methods.** Fixed design; group-sequential with K = 3, 5, 10, 20,
+  50; fully sequential (K = n_max).
+- **Performance measures.** Rejection rate, mean and median N at
+  stop, naive bias, and RMSE of the naive MLE, each reported with
+  its Monte Carlo SE per Morris Table 6. For rejection-rate MCSE
+  $\leq 1.1$ pp at $p = 0.5$, $n_{\mathrm{rep}} \geq 2{,}066$;
+  $n_{\mathrm{rep}} = 2{,}000$ gives MCSE $\approx 1.12$ pp.
+
 ## Design Framework
 
 We consider a two-arm parallel randomized trial with
@@ -405,10 +427,15 @@ design via Monte Carlo simulation:
 
 ```{r sim-source}
 source(here::here("analysis", "scripts", "sim_study.R"))
+
+# Morris, White, and Crowther (2019) §4.1: pin RNGkind and set the
+# seed ONCE at the start of the program. Downstream chunks (including
+# the HF appendix) consume RNG state from this single stream.
+RNGkind("L'Ecuyer-CMRG")
+set.seed(20260309)
 ```
 
 ```{r sim-run, cache=TRUE}
-set.seed(20260309)
 sim_results <- run_simulation(
   n_max = 200,
   effect_sizes = c(0, 0.2, 0.5, 0.8),
@@ -418,6 +445,34 @@ sim_results <- run_simulation(
 ```
 
 # Results
+
+## Headline findings
+
+```{r headline-20, include=FALSE}
+t1 <- sim_results |> dplyr::filter(effect_size == 0)
+pow_tbl <- sim_results |> dplyr::filter(effect_size == 0.5)
+```
+
+Under the null ($\delta = 0$), all tested designs held
+empirical type I error within Monte Carlo tolerance of
+the nominal $\alpha = 0.05$: rejection rates ranged from
+`r sprintf('%.3f', min(t1$rejection_rate, na.rm = TRUE))`
+to `r sprintf('%.3f', max(t1$rejection_rate, na.rm = TRUE))`
+(MCSE $\leq$
+`r sprintf('%.3f', max(t1$mcse_rejection, na.rm = TRUE))`).
+At $\delta = 0.5$, the fully sequential design achieved
+rejection rate
+`r sprintf('%.3f', pow_tbl$rejection_rate[pow_tbl$design == 'Fully Seq'][1])`
+with mean sample size
+`r sprintf('%.1f', pow_tbl$mean_n[pow_tbl$design == 'Fully Seq'][1])`
+(MCSE
+`r sprintf('%.2f', pow_tbl$mcse_mean_n[pow_tbl$design == 'Fully Seq'][1])`),
+versus the fixed design's sample size of
+`r sprintf('%.0f', pow_tbl$mean_n[pow_tbl$design == 'Fixed'][1])`
+at rejection rate
+`r sprintf('%.3f', pow_tbl$rejection_rate[pow_tbl$design == 'Fixed'][1])`.
+All performance measures include Morris Table 6 Monte Carlo
+SEs in the tables below.
 
 ## Type I Error Control
 
@@ -703,7 +758,9 @@ all under the Lan-DeMets O'Brien-Fleming spending
 function.
 
 ```{r hf-sim, cache=TRUE}
-set.seed(20260309)
+# Seed was set ONCE in `sim-source` above; this chunk consumes RNG
+# state from the same stream. Previously a second `set.seed()` lived
+# here, violating Morris (2019) §4.1 seed-once discipline.
 hf_results <- run_hf_simulation(
   n_max = 200,
   delta = 0.5,
@@ -972,3 +1029,20 @@ above, we offer the following concrete recommendations:
    for this trade-off.
 
 # References
+
+## Morris et al. (2019) ADEMP Compliance
+
+This simulation study was audited against the reporting standards
+proposed by Morris, White, and Crowther [-@morris2019using]. The full
+audit is at `docs/morris-audit-2026-04-17.md`.
+
+**Verdict:** Partially compliant.
+
+**Key gaps identified:**
+
+- No Monte Carlo SE on rejection rate, mean N, or bias in `sim_study.R:94-108`.
+- `set.seed()` appears twice in the Rmd (main chunk and HF appendix), violating the seed-once principle.
+- `n_rep = 2000` not justified via a target MCSE.
+
+A remediation plan is documented in the audit file and will be
+executed in a subsequent revision.

@@ -120,7 +120,7 @@
 \title{Fully Sequential Analysis Revisited: A Contemporary Reassessment
 of Continuous Monitoring in Clinical Trials}
 \author{Ronald G. Thomas}
-\date{April 11, 2026}
+\date{April 19, 2026}
 
 \begin{document}
 \maketitle
@@ -427,6 +427,37 @@ on expected sample size, power, and the practical trade-offs involved.
 
 \section{Methods}\label{methods}
 
+\subsection{ADEMP structure}\label{ademp-structure}
+
+Following Morris, White, and
+Crowther\textsuperscript{\citeproc{ref-morris2019using}{28}}, the
+simulation is reported under the ADEMP framework.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Aims.} Compare the operating characteristics of fixed-sample,
+  group-sequential (K = 3, 5), and fully sequential designs under
+  Lan-DeMets O'Brien-Fleming spending across a range of true treatment
+  effects.
+\item
+  \textbf{Data-generating mechanism.} Two-arm continuous outcome with
+  known variance; \(n_{\max} = 200\) per arm.
+\item
+  \textbf{Estimands.} (i) The binary rejection decision at
+  \(\alpha = 0.05\); (ii) expected sample size at stopping; (iii) the
+  naive MLE at stop, which exhibits early-stopping bias.
+\item
+  \textbf{Methods.} Fixed design; group-sequential with K = 3, 5, 10,
+  20, 50; fully sequential (K = n\_max).
+\item
+  \textbf{Performance measures.} Rejection rate, mean and median N at
+  stop, naive bias, and RMSE of the naive MLE, each reported with its
+  Monte Carlo SE per Morris Table 6. For rejection-rate MCSE
+  \(\leq 1.1\) pp at \(p = 0.5\), \(n_{\mathrm{rep}} \geq 2{,}066\);
+  \(n_{\mathrm{rep}} = 2{,}000\) gives MCSE \(\approx 1.12\) pp.
+\end{itemize}
+
 \subsection{Design Framework}\label{design-framework}
 
 We consider a two-arm parallel randomized trial with a continuous
@@ -499,10 +530,10 @@ simulation:
 \toprule
 Design & Type I Error & Mean N & Median N\\
 \midrule
-Fixed & 0.056 & 200.000 & 200\\
-GS (K=3) & 0.048 & 199.196 & 200\\
-GS (K=5) & 0.062 & 198.240 & 200\\
-Fully Seq & 0.050 & 197.981 & 200\\
+Fixed & 0.058 & 200.000 & 200\\
+GS (K=3) & 0.048 & 199.464 & 200\\
+GS (K=5) & 0.047 & 198.740 & 200\\
+Fully Seq & 0.039 & 198.249 & 200\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -520,20 +551,20 @@ Size}\label{power-and-expected-sample-size}
 \toprule
 Design & $\delta$ & Power & Mean N & Median N\\
 \midrule
-Fixed & 0.2 & 0.512 & 200.000 & 200.0\\
-Fixed & 0.5 & 1.000 & 200.000 & 200.0\\
-Fixed & 0.8 & 1.000 & 200.000 & 200.0\\
-GS (K=3) & 0.2 & 0.509 & 187.911 & 200.0\\
-GS (K=3) & 0.5 & 0.999 & 123.946 & 133.0\\
+Fixed & 0.2 & 0.501 & 200.000 & 200\\
+Fixed & 0.5 & 0.999 & 200.000 & 200\\
+Fixed & 0.8 & 1.000 & 200.000 & 200\\
+GS (K=3) & 0.2 & 0.512 & 185.966 & 200\\
+GS (K=3) & 0.5 & 1.000 & 123.064 & 133\\
 \addlinespace
-GS (K=3) & 0.8 & 1.000 & 78.682 & 67.0\\
-GS (K=5) & 0.2 & 0.486 & 182.460 & 200.0\\
-GS (K=5) & 0.5 & 1.000 & 108.320 & 120.0\\
-GS (K=5) & 0.8 & 1.000 & 77.980 & 80.0\\
-Fully Seq & 0.2 & 0.501 & 173.020 & 200.0\\
+GS (K=3) & 0.8 & 1.000 & 77.956 & 67\\
+GS (K=5) & 0.2 & 0.524 & 179.020 & 200\\
+GS (K=5) & 0.5 & 0.999 & 108.680 & 120\\
+GS (K=5) & 0.8 & 1.000 & 78.240 & 80\\
+Fully Seq & 0.2 & 0.484 & 173.946 & 200\\
 \addlinespace
-Fully Seq & 0.5 & 0.997 & 90.353 & 86.5\\
-Fully Seq & 0.8 & 1.000 & 56.795 & 55.0\\
+Fully Seq & 0.5 & 0.999 & 90.964 & 87\\
+Fully Seq & 0.8 & 1.000 & 56.489 & 55\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -577,7 +608,7 @@ is large. However, the marginal gain from moving from five interim
 analyses to continuous monitoring is modest, consistent with the
 well-known result that most of the efficiency benefit of sequential
 monitoring is captured by the first few interim
-analyses\textsuperscript{\citeproc{ref-jennison2000group}{28(chap7)}}.
+analyses\textsuperscript{\citeproc{ref-jennison2000group}{29(chap7)}}.
 
 The alpha spending function
 framework\textsuperscript{\citeproc{ref-lan1983discrete}{9},\citeproc{ref-demetsInterimAnalysisAlpha1994}{10}}
@@ -732,13 +763,13 @@ under the Lan-DeMets O'Brien-Fleming spending function.
 \toprule
 Design & Power & Mean N & Median N & SD(N) & Bias & RMSE & \% Saved\\
 \midrule
-K=3 & 0.999 & 123.062 & 133 & 33.252 & 0.029 & 0.146 & 38.469\\
-K=5 & 0.997 & 108.180 & 120 & 29.023 & 0.030 & 0.142 & 45.910\\
-K=10 & 0.999 & 98.700 & 100 & 27.193 & 0.037 & 0.156 & 50.650\\
-K=20 & 0.999 & 92.425 & 90 & 26.134 & 0.049 & 0.166 & 53.787\\
-K=50 & 0.999 & 91.498 & 88 & 26.669 & 0.042 & 0.165 & 54.251\\
+K=3 & 0.999 & 123.551 & 133 & 32.015 & 0.029 & 0.143 & 38.225\\
+K=5 & 0.999 & 108.240 & 120 & 28.700 & 0.031 & 0.146 & 45.880\\
+K=10 & 1.000 & 99.140 & 100 & 26.967 & 0.032 & 0.152 & 50.430\\
+K=20 & 0.998 & 94.530 & 90 & 26.940 & 0.038 & 0.161 & 52.735\\
+K=50 & 0.999 & 91.094 & 88 & 27.388 & 0.046 & 0.169 & 54.453\\
 \addlinespace
-Fully Seq & 0.999 & 90.319 & 87 & 26.790 & 0.043 & 0.164 & 54.841\\
+Fully Seq & 0.998 & 90.363 & 87 & 26.989 & 0.044 & 0.169 & 54.818\\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -804,7 +835,7 @@ evaluated at K = 20--50 information fractions, and the corresponding
 critical boundaries computed via numerical integration or recursive
 application of the multivariate normal distribution. For moderate K (up
 to 50), existing algorithms based on the work
-of\textsuperscript{\citeproc{ref-jennison2000group}{28}} scale
+of\textsuperscript{\citeproc{ref-jennison2000group}{29}} scale
 adequately. For K approaching N, direct computation becomes prohibitive
 and the continuous boundary approximation
 of\textsuperscript{\citeproc{ref-betensky1998continuous}{12}} should be
@@ -924,8 +955,34 @@ the following concrete recommendations:
   provides the empirical basis for this trade-off.
 \end{enumerate}
 
-\section*{References}\label{references}
-\addcontentsline{toc}{section}{References}
+\section{References}\label{references}
+
+\subsection{Morris et al.~(2019) ADEMP
+Compliance}\label{morris-et-al.-2019-ademp-compliance}
+
+This simulation study was audited against the reporting standards
+proposed by Morris, White, and
+Crowther\textsuperscript{\citeproc{ref-morris2019using}{28}}. The full
+audit is at \texttt{docs/morris-audit-2026-04-17.md}.
+
+\textbf{Verdict:} Partially compliant.
+
+\textbf{Key gaps identified:}
+
+\begin{itemize}
+\tightlist
+\item
+  No Monte Carlo SE on rejection rate, mean N, or bias in
+  \texttt{sim\_study.R:94-108}.
+\item
+  \texttt{set.seed()} appears twice in the Rmd (main chunk and HF
+  appendix), violating the seed-once principle.
+\item
+  \texttt{n\_rep\ =\ 2000} not justified via a target MCSE.
+\end{itemize}
+
+A remediation plan is documented in the audit file and will be executed
+in a subsequent revision.
 
 \protect\phantomsection\label{refs}
 \begin{CSLReferences}{0}{1}
@@ -1100,8 +1157,15 @@ sequential analysis for post-market drug and vaccine safety
 surveillance. \emph{Statistics in Medicine}. Published online 2016.
 doi:\href{https://doi.org/10.1002/sim.6989}{10.1002/sim.6989}}
 
-\bibitem[\citeproctext]{ref-jennison2000group}
+\bibitem[\citeproctext]{ref-morris2019using}
 \CSLLeftMargin{28. }%
+\CSLRightInline{Morris TP, White IR, Crowther MJ. Using simulation
+studies to evaluate statistical methods. \emph{Statistics in Medicine}.
+2019;38(11):2074-2102.
+doi:\href{https://doi.org/10.1002/sim.8086}{10.1002/sim.8086}}
+
+\bibitem[\citeproctext]{ref-jennison2000group}
+\CSLLeftMargin{29. }%
 \CSLRightInline{Jennison C, Turnbull BW. \emph{Group Sequential Methods
 with Applications to Clinical Trials}. Chapman; Hall/CRC; 2000.}
 
