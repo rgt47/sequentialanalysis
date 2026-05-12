@@ -15,19 +15,20 @@
 \contentsline {subsection}{\numberline {2.3}Alpha Spending Function}{7}{subsection.2.3}%
 \contentsline {subsection}{\numberline {2.4}Simulation Procedure}{7}{subsection.2.4}%
 \contentsline {section}{\numberline {3}Results}{7}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Type I Error Control}{7}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Power and Expected Sample Size}{7}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Expected Sample Size by Effect Size}{7}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Stopping Time Distribution}{7}{subsection.3.4}%
-\contentsline {section}{\numberline {4}Discussion}{7}{section.4}%
+\contentsline {subsection}{\numberline {3.1}Headline findings}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Type I Error Control}{9}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Power and Expected Sample Size}{9}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Expected Sample Size by Effect Size}{9}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Stopping Time Distribution}{9}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Discussion}{9}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Limitations}{10}{subsection.4.1}%
 \contentsline {section}{\numberline {5}Future Research}{10}{section.5}%
-\contentsline {section}{\numberline {A}Appendix: High-Frequency Monitoring as a Practical}{11}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}Motivation}{11}{subsection.A.1}%
-\contentsline {subsection}{\numberline {A.2}Diminishing Returns in K: An Empirical Analysis}{11}{subsection.A.2}%
-\contentsline {subsection}{\numberline {A.3}Bias Under High-Frequency Monitoring}{13}{subsection.A.3}%
-\contentsline {subsection}{\numberline {A.4}A Software Architecture for High-Frequency}{13}{subsection.A.4}%
-\contentsline {subsection}{\numberline {A.5}The Diminishing Marginal Cost of More Analyses}{14}{subsection.A.5}%
-\contentsline {subsection}{\numberline {A.6}Practical Recommendations}{14}{subsection.A.6}%
-\contentsline {section}{\numberline {B}References}{15}{appendix.B}%
-\contentsline {subsection}{\numberline {B.1}Morris et al.~(2019) ADEMP Compliance}{15}{subsection.B.1}%
+\contentsline {section}{\numberline {A}Appendix: High-Frequency Monitoring as a Practical}{12}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Motivation}{12}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Diminishing Returns in K: An Empirical Analysis}{12}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}Bias Under High-Frequency Monitoring}{14}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}A Software Architecture for High-Frequency}{14}{subsection.A.4}%
+\contentsline {subsection}{\numberline {A.5}The Diminishing Marginal Cost of More Analyses}{15}{subsection.A.5}%
+\contentsline {subsection}{\numberline {A.6}Practical Recommendations}{15}{subsection.A.6}%
+\contentsline {section}{\numberline {B}References}{16}{appendix.B}%
+\contentsline {subsection}{\numberline {B.1}Morris et al.~(2019) ADEMP Compliance}{16}{subsection.B.1}%
