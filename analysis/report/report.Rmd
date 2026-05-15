@@ -4,24 +4,6 @@ title: "Fully Sequential Analysis Revisited:
   in Clinical Trials"
 author: "Ronald G. Thomas, Ph.D.\\thanks{Wertheim School of Public Health, UCSD; ORCID: 0000-0003-1686-4965}"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
-fontsize: 11pt
-geometry: "left=3cm,right=5cm,top=2cm,bottom=2cm"
-output:
-  pdf_document:
-    latex_engine: xelatex
-    toc: true
-    keep_tex: true
-    number_sections: true
-    highlight: tango
-bibliography: references.bib
-csl: statistics-in-medicine.csl
-link-citations: true
-header-includes:
-  - \usepackage{graphicx}
-  - \usepackage{geometry}
-  - \usepackage{longtable}
-  - \usepackage{booktabs}
-  - \usepackage{caption}
 abstract: |
   Fully sequential analysis, in which the cumulative
   test statistic is evaluated after each individual
@@ -44,6 +26,28 @@ abstract: |
   continuous sequential monitoring has already been
   revived, and considers whether similar arguments
   extend to confirmatory efficacy trials.
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    number_sections: true
+    keep_tex: true
+    highlight: tango
+fontsize: 11pt
+geometry: "left=3cm,right=5cm,top=2cm,bottom=2cm"
+bibliography: references.bib
+csl: statistics-in-medicine.csl
+link-citations: true
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{lineno}
+  - \linenumbers
+  - \usepackage{graphicx}
+  - \usepackage{geometry}
+  - \usepackage{longtable}
+  - \usepackage{booktabs}
+  - \usepackage{caption}
 ---
 
 ```{r setup, include=FALSE}
