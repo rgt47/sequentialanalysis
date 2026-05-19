@@ -335,11 +335,11 @@ realized.
 
 ## Present Study
 
-This report examines whether the fully sequential
-approach, in which the stopping boundary is evaluated
-after each individual response (group size equal to
-one), merits reassessment for contemporary clinical
-trials beyond safety surveillance. The question is
+We examine whether the fully sequential approach,
+in which the stopping boundary is evaluated after
+each individual response (group size equal to one),
+merits reassessment for contemporary clinical trials
+beyond safety surveillance. The question is
 motivated by three developments since the 1970s:
 
 1. Modern computing eliminates the historical
