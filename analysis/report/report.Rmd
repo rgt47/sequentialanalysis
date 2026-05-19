@@ -176,8 +176,8 @@ demonstrated the construction of a continuous stopping
 boundary from an alpha spending function, providing the
 mathematical machinery needed to implement fully
 sequential monitoring within the modern spending
-function framework. This result is central to the
-present reassessment: it implies that fully sequential
+function framework. This result is central to our
+reassessment: it implies that fully sequential
 analysis with group size one is not a fundamentally
 different methodology from group sequential analysis,
 but rather the limiting case of the same framework.
