@@ -593,9 +593,9 @@ ggplot(stop_df, aes(x = stop_fraction,
 
 # Discussion
 
-The results of this investigation must be interpreted
-in the context of both the theoretical and practical
-dimensions of clinical trial monitoring.
+We shall interpret the results in the context of both
+the theoretical and practical dimensions of clinical
+trial monitoring.
 
 From a purely statistical perspective, the fully
 sequential design (group size one) represents the
@@ -624,9 +624,8 @@ monitoring.
 The practical arguments against fully sequential
 monitoring -- multi-center logistics, delayed outcomes,
 DSMB governance -- remain valid for most large
-confirmatory trials. However, several evolving features
-of the clinical trial landscape may narrow the
-practical gap:
+confirmatory trials. However, several evolving features of contemporary
+clinical trial practice may narrow the practical gap:
 
 - Electronic data capture systems increasingly
   support near-real-time data availability.
@@ -1038,7 +1037,7 @@ above, we offer the following concrete recommendations:
 
 ## Morris et al. (2019) ADEMP Compliance
 
-This simulation study was audited against the reporting standards
+We audited this simulation study against the reporting standards
 proposed by Morris, White, and Crowther [-@morris2019using]. The full
 audit is at `docs/morris-audit-2026-04-17.md`.
 
@@ -1050,8 +1049,8 @@ audit is at `docs/morris-audit-2026-04-17.md`.
 - `set.seed()` appears twice in the Rmd (main chunk and HF appendix), violating the seed-once principle.
 - `n_rep = 2000` not justified via a target MCSE.
 
-A remediation plan is documented in the audit file and will be
-executed in a subsequent revision.
+A remediation plan is recorded in the audit file and will be
+taken up in a subsequent revision.
 
 
 ```{r footer, echo=FALSE, results='asis'}
