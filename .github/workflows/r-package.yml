@@ -38,7 +38,7 @@ jobs:
     needs: detect
     if: needs.detect.outputs.nix != 'true'
     runs-on: ubuntu-latest
-    container: rocker/tidyverse:4.6.0
+    container: rocker/verse:4.6.0
     env:
       ZZCOLLAB_CONTAINER: "true"
       CI_TOOLS_LIB: "/tmp/ci-tools"
@@ -50,7 +50,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          apt-get update && apt-get install -y jq libcurl4-openssl-dev libssl-dev libxml2-dev cmake libnode-dev
+          apt-get update && apt-get install -y jq libcurl4-openssl-dev libssl-dev libxml2-dev cmake
 
       - name: Detect package backend
         id: mode
