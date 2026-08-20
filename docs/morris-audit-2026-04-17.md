@@ -1,6 +1,24 @@
 # Morris et al. (2019) ADEMP Audit: 20-sequential-analysis
 *2026-04-17 09:02 PDT*
 
+**2026-08-20 update:** This audit is superseded by
+`docs/pub_review_remediation_2026-08-20.md`. It is retained here as
+a historical record (referenced by earlier commits) but is no
+longer summarized in the manuscript body. Two corrections to the
+table below, found during 2026-08-20 remediation:
+
+1. "Paired comparisons: Met" is false. `run_simulation()` in
+   `analysis/scripts/sim_study.R` calls `simulate_one_trial()`
+   independently, with fresh `rnorm()` draws, for every
+   design-by-effect-size cell; no common random numbers are shared
+   across designs. The correct status is **Not met**. This is now
+   disclosed in `analysis/report/report.Rmd`'s Limitations section.
+2. The gaps listed below (no MCSE columns, seed set twice) describe
+   the pre-2026-08-20 state of the code and are now resolved: MCSE
+   columns are computed in `sim_study.R` and displayed in every
+   manuscript table, and the seed is set exactly once, in
+   `analysis/scripts/run_all_simulations.R`.
+
 ## Scope
 
 Files audited:
@@ -23,7 +41,7 @@ Files audited:
 | MCSE reported per metric | Not met | `sim_study.R:94-108` returns no MCSE cols |
 | Seed set once | Partial | `set.seed(20260309)` appears twice (`report.Rmd:411` main, `:706` HF appendix); cache effectively preserves reproducibility, but formally violates seed-once |
 | RNG states stored | Not met | not stored |
-| Paired comparisons | Met | same data fed to all designs per rep |
+| Paired comparisons | Not met (corrected 2026-08-20; originally logged as "Met") | `simulate_one_trial()` draws independent `rnorm()` data per design-by-effect-size cell; no common random numbers |
 | Reproducibility | Partial | `cache=TRUE` on chunks; RNGkind not pinned |
 
 ## Overall verdict

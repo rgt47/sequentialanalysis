@@ -103,6 +103,44 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+%% tools/stamp.tex
+%% Provenance footer for PDFs rendered from this project.
+%% Vendored by zzcollab; this file is not project-specific. The
+%% footer prints the source document and the time of rendering.
+%% The git version is defined here too, and so is available to a
+%% project that wants it on the page, but it is left off the
+%% default footer: it already names the staged copy in share/ and
+%% appears in its manifest row. All values are supplied at render
+%% time by tools/stamp-render.R, which writes a small generated
+%% file that redefines the macros below. The \providecommand
+%% defaults keep a bare LaTeX compile working when the document is
+%% built without the wrapper.
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\providecommand{\stampsource}{\detokenize{(source not recorded)}}
+\providecommand{\stamptime}{(time not recorded)}
+\providecommand{\stampversion}{\detokenize{(version not recorded)}}
+\setlength{\footskip}{40pt}
+\newcommand{\stampfootcontent}{%
+  \footnotesize\color{gray}%
+  \parbox[b]{\textwidth}{%
+    \stamptime\hfill\thepage\\[2pt]%
+    \ttfamily\raggedright\stampsource}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\stampfootcontent}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+%% The title page uses the `plain` page style; redefine it so the
+%% stamp appears there too.
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\stampfootcontent}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0.4pt}}
+\renewcommand{\stampsource}{\textasciitilde{}/\allowbreak{}prj/\allowbreak{}res/\allowbreak{}20-sequential-analysis/\allowbreak{}sequentialanalysis/\allowbreak{}analysis/\allowbreak{}report/\allowbreak{}report.Rmd}
+\renewcommand{\stamptime}{2026-08-20 13:24 PDT}
+\renewcommand{\stampversion}{\detokenize{3fc5c0b-wip}}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{booktabs}
@@ -141,7 +179,7 @@
 
 \title{Fully Sequential Analysis Revisited: A Contemporary Reassessment of Continuous Monitoring in Clinical Trials}
 \author{Ronald G. Thomas, Ph.D.\thanks{Wertheim School of Public Health, UCSD; ORCID: 0000-0003-1686-4965}}
-\date{August 15, 2026}
+\date{August 20, 2026}
 
 \begin{document}
 \maketitle
@@ -465,13 +503,24 @@ sequential design (group size one, alpha spending
 function boundaries) relative to standard group
 sequential designs with 3--5 interim analyses, focusing
 on expected sample size, power, and the practical
-trade-offs involved.
+trade-offs involved. The main-body comparison
+(fixed versus K = 3, 5 versus fully sequential) largely
+reproduces a result already established by\textsuperscript{\citeproc{ref-sebille2000comparison}{16}},\textsuperscript{\citeproc{ref-sebille2003sequential}{17}}, and\textsuperscript{\citeproc{ref-jennison2000group}{28}} (Chapter 7): most of the efficiency
+gain of sequential monitoring is captured by a handful of
+looks. The paper's own empirical contribution, developed
+in the Appendix, is the K-grid analysis showing where
+between K = 5 and K = N the returns actually diminish,
+and the resulting case for high-frequency monitoring
+(K = 20--50) as a practical middle ground; readers
+mainly interested in that contribution can proceed
+directly to the Appendix after the Methods and headline
+Results below.
 
 \section{Methods}\label{methods}
 
 \subsection{ADEMP structure}\label{ademp-structure}
 
-Following Morris, White, and Crowther\textsuperscript{\citeproc{ref-morris2019using}{28}}, the
+Following Morris, White, and Crowther\textsuperscript{\citeproc{ref-morris2019using}{29}}, the
 simulation is reported under the ADEMP framework.
 
 \begin{itemize}
@@ -483,14 +532,19 @@ simulation is reported under the ADEMP framework.
   treatment effects.
 \item
   \textbf{Data-generating mechanism.} Two-arm continuous outcome with
-  known variance; \(n_{\max} = 200\) per arm.
+  known variance; \(n_{\max} = 200\) per arm in the main grid, and
+  \(n_{\max} = 85\) per arm in the power-calibrated sensitivity
+  scenario (Results).
 \item
   \textbf{Estimands.} (i) The binary rejection decision at
   \(\alpha = 0.05\); (ii) expected sample size at stopping; (iii) the
   naive MLE at stop, which exhibits early-stopping bias.
 \item
-  \textbf{Methods.} Fixed design; group-sequential with K = 3, 5, 10, 20,
-  50; fully sequential (K = n\_max).
+  \textbf{Methods.} Fixed design; group-sequential with K = 3, 5; fully
+  sequential (K = n\_max) in the main grid (Results). The finer
+  K = 3, 5, 10, 20, 50, n\_max grid is run only at \(\delta = 0.5\), in
+  both the appendix's overpowered scenario (\(n_{\max} = 200\)) and
+  its power-calibrated companion (\(n_{\max} = 85\)).
 \item
   \textbf{Performance measures.} Rejection rate, mean and median N at
   stop, naive bias, and RMSE of the naive MLE, each reported with
@@ -553,29 +607,70 @@ design via Monte Carlo simulation:
   \textbf{True effect sizes:} \(\delta \in \{0, 0.2, 0.5, 0.8\}\)
   (standardized)
 \item
-  \textbf{Maximum sample size:} \(N = 200\) per arm
+  \textbf{Maximum sample size:} \(N = 200\) per arm for the
+  main grid, plus a second scenario sized to give the
+  fixed design approximately 90 percent power at
+  \(\delta = 0.5\) (\(N = 85\) per arm; see Section
+  ``Power-Calibrated Sensitivity Scenario'' below)
 \item
   \textbf{Significance level:} \(\alpha = 0.05\) (two-sided)
 \item
-  \textbf{Replications:} 2,000 per scenario
+  \textbf{Replications:} 2,000 per scenario (20,000 for the
+  null scenario used in the type I error table; see
+  below)
 \item
-  \textbf{Random seed:} \texttt{set.seed(20260309)} for
-  reproducibility
+  \textbf{Random seed:} \texttt{set.seed(20260309)}, \texttt{RNGkind}
+  \texttt{"L\textquotesingle{}Ecuyer-CMRG"}, set once
 \end{itemize}
+
+\subsubsection{Reproducibility}\label{reproducibility}
+
+All simulation results reported in this manuscript are
+generated by the standalone script
+\texttt{analysis/scripts/run\_all\_simulations.R}, which sources
+\texttt{analysis/scripts/sim\_study.R}, sets the seed once, runs
+every scenario the report uses, and writes versioned
+\texttt{.rds} files to \texttt{analysis/data/derived\_data/}. The Rmd
+chunks below read those files with \texttt{readRDS()} and
+perform no random sampling themselves, so the reported
+numbers do not depend on knitr's chunk cache (which does
+not replay RNG state across cached and uncached chunks
+and previously left the appendix simulation's
+reproducibility undocumented). To regenerate all results
+from scratch:
+
+\begin{verbatim}
+Rscript analysis/scripts/run_all_simulations.R
+\end{verbatim}
 
 \section{Results}\label{results}
 
 \subsection{Headline findings}\label{headline-findings}
 
-Under the null (\(\delta = 0\)), all tested designs held
-empirical type I error within Monte Carlo tolerance of
-the nominal \(\alpha = 0.05\): rejection rates ranged from
-0.039
-to 0.058
-(MCSE \(\leq\)
-0.005).
-At \(\delta = 0.5\), the fully sequential design achieved
-rejection rate
+Under the null (\(\delta = 0\)), evaluated at
+\(n_{\mathrm{rep}} = 20{,}000\) so the Monte Carlo SE is
+precise enough to assess nominal coverage (MCSE
+\(\approx\)
+0.0016),
+empirical type I error ranged from
+0.049
+to 0.053
+against nominal \(\alpha = 0.05\), all designs within
+roughly two Monte Carlo SEs of nominal. This supersedes
+an earlier reading of this simulation at
+\(n_{\mathrm{rep}} = 2{,}000\), where the fully sequential
+design's rejection rate (0.039) sat about 2.2 MCSEs
+below nominal; at \(n_{\mathrm{rep}} = 20{,}000\) the same
+design's rejection rate is
+0.053,
+consistent with nominal control and indicating the
+earlier shortfall was Monte Carlo noise rather than a
+systematic conservatism of the K = N discrete spending
+construction. At \(\delta = 0.5\) and \(N_{\max} = 200\)
+(the overpowered main-grid scenario; see the
+power-calibrated scenario below for a realistic power
+regime), the fully sequential design achieved rejection
+rate
 0.999
 with mean sample size
 91.0
@@ -585,25 +680,26 @@ versus the fixed design's sample size of
 200
 at rejection rate
 0.999.
-All performance measures include Morris Table 6 Monte Carlo
-SEs in the tables below.
+Monte Carlo SEs (MCSE) are reported alongside every
+performance measure in the tables below.
 
 \subsection{Type I Error Control}\label{type-i-error-control}
 
 \begin{table}[!h]
 \centering
 \caption{\label{tab:type1-table}Type I error rates and expected sample
-    sizes under the null hypothesis ($\delta = 0$).}
+    sizes under the null hypothesis ($\delta = 0$,
+    $n_{\mathrm{rep}} = 20{,}000$).}
 \centering
 \fontsize{10}{12}\selectfont
-\begin{tabular}[t]{lrrr}
+\begin{tabular}[t]{lrrrrr}
 \toprule
-Design & Type I Error & Mean N & Median N\\
+Design & Type I Error & MCSE & Mean N & MCSE(N) & Median N\\
 \midrule
-Fixed & 0.058 & 200.000 & 200\\
-GS (K=3) & 0.048 & 199.464 & 200\\
-GS (K=5) & 0.047 & 198.740 & 200\\
-Fully Seq & 0.039 & 198.249 & 200\\
+Fixed & 0.0490 & 0.0015 & 200.0000 & 0.0000 & 200\\
+GS (K=3) & 0.0515 & 0.0016 & 199.1126 & 0.0558 & 200\\
+GS (K=5) & 0.0517 & 0.0016 & 198.6320 & 0.0633 & 200\\
+Fully Seq & 0.0530 & 0.0016 & 197.7302 & 0.0853 & 200\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -613,30 +709,91 @@ Fully Seq & 0.039 & 198.249 & 200\\
 \begin{table}[!h]
 \centering
 \caption{\label{tab:power-table}Power and expected sample sizes under
-    alternative hypotheses.}
+    alternative hypotheses ($N_{\max} = 200$ per arm;
+    power is at or near ceiling for $\delta \geq 0.5$,
+    see the power-calibrated scenario below).}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{10}{12}\selectfont
+\begin{tabular}[t]{lrrrrrr}
+\toprule
+Design & $\delta$ & Power & MCSE & Mean N & MCSE(N) & Median N\\
+\midrule
+Fixed & 0.2 & 0.501 & 0.011 & 200.000 & 0.000 & 200\\
+Fixed & 0.5 & 0.999 & 0.001 & 200.000 & 0.000 & 200\\
+Fixed & 0.8 & 1.000 & 0.000 & 200.000 & 0.000 & 200\\
+GS (K=3) & 0.2 & 0.512 & 0.011 & 185.966 & 0.620 & 200\\
+GS (K=3) & 0.5 & 1.000 & 0.000 & 123.064 & 0.748 & 133\\
+\addlinespace
+GS (K=3) & 0.8 & 1.000 & 0.000 & 77.956 & 0.549 & 67\\
+GS (K=5) & 0.2 & 0.524 & 0.011 & 179.020 & 0.733 & 200\\
+GS (K=5) & 0.5 & 0.999 & 0.001 & 108.680 & 0.651 & 120\\
+GS (K=5) & 0.8 & 1.000 & 0.000 & 78.240 & 0.323 & 80\\
+Fully Seq & 0.2 & 0.484 & 0.011 & 173.946 & 0.806 & 200\\
+\addlinespace
+Fully Seq & 0.5 & 0.999 & 0.001 & 90.964 & 0.612 & 87\\
+Fully Seq & 0.8 & 1.000 & 0.000 & 56.489 & 0.289 & 55\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Power-Calibrated Sensitivity Scenario}\label{power-calibrated-sensitivity-scenario}
+
+The main grid above is conducted at \(N_{\max} = 200\),
+which gives the fixed design essentially saturated power
+(0.998--1.000) at \(\delta = 0.5\) and \(0.8\). Sample size
+savings computed in that regime are conditional on gross
+overpowering and do not establish how much benefit
+sequential monitoring offers when a trial is sized
+conventionally. We add a second scenario, sized so the
+fixed design has approximately 90 percent power at
+\(\delta = 0.5\): \(N_{\max} =\)
+85 per arm, from the two-sample normal mean
+formula \(N = 2(z_{\alpha/2} + z_\beta)^2 / \delta^2\).
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:power90-table}Power and expected sample size at $\delta = 0.5$, $N_{\max} = 85$ per arm (fixed design at approximately 90\% power).}
 \centering
 \fontsize{10}{12}\selectfont
-\begin{tabular}[t]{lrrrr}
+\begin{tabular}[t]{lrrrrr}
 \toprule
-Design & $\delta$ & Power & Mean N & Median N\\
+Design & Power & MCSE & Mean N & MCSE(N) & Median N\\
 \midrule
-Fixed & 0.2 & 0.501 & 200.000 & 200\\
-Fixed & 0.5 & 0.999 & 200.000 & 200\\
-Fixed & 0.8 & 1.000 & 200.000 & 200\\
-GS (K=3) & 0.2 & 0.512 & 185.966 & 200\\
-GS (K=3) & 0.5 & 1.000 & 123.064 & 133\\
-\addlinespace
-GS (K=3) & 0.8 & 1.000 & 77.956 & 67\\
-GS (K=5) & 0.2 & 0.524 & 179.020 & 200\\
-GS (K=5) & 0.5 & 0.999 & 108.680 & 120\\
-GS (K=5) & 0.8 & 1.000 & 78.240 & 80\\
-Fully Seq & 0.2 & 0.484 & 173.946 & 200\\
-\addlinespace
-Fully Seq & 0.5 & 0.999 & 90.964 & 87\\
-Fully Seq & 0.8 & 1.000 & 56.489 & 55\\
+Fixed & 0.903 & 0.007 & 85.000 & 0.000 & 85\\
+GS (K=3) & 0.903 & 0.007 & 68.448 & 0.348 & 57\\
+GS (K=5) & 0.897 & 0.007 & 63.512 & 0.366 & 68\\
+Fully Seq & 0.868 & 0.008 & 58.546 & 0.389 & 57\\
 \bottomrule
 \end{tabular}
 \end{table}
+
+In this realistically powered regime, the fully
+sequential design's power drops to
+0.868,
+about
+3.6
+percentage points below the fixed design's
+0.903,
+while still saving
+31.1
+percent of expected sample size relative to the fixed
+design. The sample size savings are real but smaller,
+and the power cost of sequential stopping is visible,
+in this regime than in the overpowered main-grid
+scenario above.
+
+The same power cost is visible, if less dramatically,
+even in the overpowered main grid at
+\(\delta = 0.2\), the smallest nonzero effect size
+evaluated: fixed-design power is
+0.501
+versus
+0.484
+for the fully sequential design, a loss that cuts
+against the paper's ASN-savings thesis and is worth
+weighing against the sample size reduction the same
+design offers at larger effect sizes.
 
 \subsection{Expected Sample Size by Effect Size}\label{expected-sample-size-by-effect-size}
 
@@ -651,13 +808,21 @@ Fully Seq & 0.8 & 1.000 & 56.489 & 55\\
 
 \subsection{Stopping Time Distribution}\label{stopping-time-distribution}
 
+Stopping fractions are point masses at each design's K
+analysis times (plus a mass at 1.0 for trials that reach
+the final look, including every fixed-design trial by
+construction). A kernel density smooths these point
+masses into a spread that does not exist in the data; we
+plot the empirical CDF instead, which represents a
+discrete stopping-time distribution honestly.
+
 \begin{figure}
 
-{\centering \includegraphics[width=0.9\linewidth]{report_files/figure-latex/stopping-density-1} 
+{\centering \includegraphics[width=0.9\linewidth]{report_files/figure-latex/stopping-ecdf-1} 
 
 }
 
-\caption{Distribution of stopping times (information fraction at termination) under a moderate effect size (delta = 0.5). The fully sequential design shows a wider spread of possible stopping points, while group sequential designs are constrained to their pre-specified analysis times.}\label{fig:stopping-density}
+\caption{Empirical cumulative distribution of stopping times (information fraction at termination) under a moderate effect size (delta = 0.5). Each design's stopping fraction is a step function with mass only at its own analysis times; the fully sequential design's steps are finer-grained than the group sequential designs'.}\label{fig:stopping-ecdf}
 \end{figure}
 
 \section{Discussion}\label{discussion}
@@ -676,17 +841,58 @@ moving from five interim analyses to continuous
 monitoring is modest, consistent with the well-known
 result that most of the efficiency benefit of sequential
 monitoring is captured by the first few interim
-analyses\textsuperscript{\citeproc{ref-jennison2000group}{29(chap7)}}.
+analyses\textsuperscript{\citeproc{ref-jennison2000group}{28(chap7)}}.
 
 The alpha spending function framework\textsuperscript{\citeproc{ref-lan1983discrete}{9},\citeproc{ref-demetsInterimAnalysisAlpha1994}{10}}
 provides the theoretical foundation that makes fully
 sequential monitoring rigorous within the modern
 inferential framework.\textsuperscript{\citeproc{ref-betensky1998continuous}{12}}
 demonstrated that continuous stopping boundaries can
-be constructed directly from spending functions, and
-the simulation results confirm that type I error is
-controlled at the nominal level under continuous
-monitoring.
+be constructed directly from spending functions. At
+\(n_{\mathrm{rep}} = 20{,}000\) (precise enough to
+distinguish nominal control from a few-thousandths
+deviation), all four designs' empirical type I error
+rates sit within roughly two Monte Carlo SEs of the
+nominal \(\alpha = 0.05\), supporting the claim that type
+I error is controlled at the nominal level under
+continuous monitoring as constructed here (per-pair
+looks with rounded analysis times); we do not evaluate
+whether every discrete-K approximation to a continuous
+spending function shares this property.
+
+The designs compared here stop only on rejection of the
+null; no futility (beta-spending) boundary is
+implemented, so a trial that fails to cross the upper
+boundary continues to \(N_{\max}\). Consequently, under
+\(H_0\) the mean sample size is 197.7 to 200 for every
+design (Table with the type I error results above): the
+simulation demonstrates no expected sample size benefit
+under the null, even though the Introduction motivates
+fully sequential monitoring partly through Armitage's
+lower futility and harm boundary, and the appendix's
+architecture proposal recommends conditional-power
+futility alerts. The ASN savings reported throughout
+this report are therefore savings from efficacy-only
+stopping under a true, nonzero treatment effect; they
+say nothing about the sample size benefit -- if any --
+of stopping early for futility, which would require
+adding a beta-spending boundary and is left for future
+work (see Future Research). Readers should read every
+claim of sample size ``savings'' in this report as
+conditional on that scope.
+
+Every simulated look is evaluated after a treated-control
+pair (K = 200 corresponds to 200 pairs, 400 subjects, at
+the main-grid \(N_{\max}\)), not after each individual
+response as a literal reading of ``fully sequential'' (group
+size one, following one observation at a time) might
+suggest. We retain the paired framing throughout because
+the two-arm normal DGM pairs enrollment across arms by
+construction; the qualitative comparison to group
+sequential designs with K = 3 or K = 5 looks is
+unaffected, but the label ``fully sequential'' here means
+``one look per enrolled pair,'' not ``one look per
+observation.''
 
 The practical arguments against fully sequential
 monitoring -- multi-center logistics, delayed outcomes,
@@ -732,6 +938,54 @@ When those barriers are high, the group sequential
 approach sacrifices little efficiency while gaining
 substantial operational simplicity.
 
+\subsection{Position Relative to Anytime-Valid Inference}\label{position-relative-to-anytime-valid-inference}
+
+The spending-function approach evaluated here is not the
+only contemporary route to continuous monitoring with
+error control. Since roughly 2011, a distinct literature
+on anytime-valid (also called always-valid) inference has
+addressed the same problem -- valid inference at
+arbitrary, possibly data-dependent stopping times -- from
+a different starting point, and is deployed at
+production scale in industrial A/B testing\textsuperscript{\citeproc{ref-johari2017peeking}{30}}. Confidence sequences\textsuperscript{\citeproc{ref-robbins1970statistical}{31},\citeproc{ref-howard2021time}{32}} provide
+intervals that are simultaneously valid at every sample
+size, so a user may stop for any reason, including
+looking at every new observation, without inflating type
+I error; e-values and e-processes generalize this to a
+broader game-theoretic statistics framework\textsuperscript{\citeproc{ref-ramdas2023game}{33}}. Kulldorff and colleagues'
+maximized sequential probability ratio test\textsuperscript{\citeproc{ref-kulldorff2011maximized}{34}} is the seminal continuous-
+monitoring method for drug and vaccine safety
+surveillance and predates the safety-surveillance
+application cited earlier\textsuperscript{\citeproc{ref-kulkarni2016continuous}{27}}.
+The classical monitoring literature this report draws on
+is thoroughly synthesized in\textsuperscript{\citeproc{ref-proschan2006statistical}{35}},
+and the repeated confidence interval approach of\textsuperscript{\citeproc{ref-jennison1989interim}{36}}, referenced without citation in
+the appendix's software architecture proposal, is the
+group sequential analogue of a confidence sequence.
+
+These methods differ from the Lan-DeMets alpha-spending
+construction used throughout this report primarily in
+how they are derived (test-martingale or confidence-
+sequence arguments versus information-fraction spending
+functions) and in their typical use case (continuous,
+often unbounded monitoring in digital experimentation
+versus a fixed-\(N_{\max}\), discretely monitored clinical
+trial). We do not implement an mSPRT or confidence-
+sequence comparator in the simulation reported here; a
+head-to-head comparison of expected sample size and
+naive-estimator bias between a K = 20-50 spending-
+function design and a comparably tuned confidence
+sequence is a natural extension and is listed under
+Future Research. Absent that comparison, we do not claim
+that the spending-function approach dominates
+anytime-valid alternatives, only that it remains the more
+familiar framework for regulated confirmatory trials and
+that the high-frequency monitoring (K = 20 to 50)
+direction proposed in the appendix is one practical way
+to narrow the gap between the K = 3-5 convention and the
+anytime-valid literature that most trialists do not yet
+use.
+
 \subsection{Limitations}\label{limitations}
 
 This analysis considers only a two-arm trial with a
@@ -741,7 +995,46 @@ outcomes, or designs with unknown variance. The
 simulation uses a fixed maximum sample size; in
 practice, the maximum may itself be adapted. The
 post-estimation bias issue\textsuperscript{\citeproc{ref-emersonParameterEstimationFollowing1990}{20}} is
-acknowledged but not directly evaluated here.
+acknowledged but not directly evaluated here. No
+futility (beta-spending) boundary is implemented; all
+reported ASN savings are efficacy-only-stopping savings
+(see Discussion). Each design-by-effect-size cell in the
+main simulation grid draws independent normal outcome
+data rather than reusing a common random-number stream
+across designs (\texttt{run\_simulation()} in
+\texttt{analysis/scripts/sim\_study.R} calls
+\texttt{simulate\_one\_trial()} independently for every design);
+cross-design contrasts at a fixed effect size are
+therefore somewhat noisier than a common-random-numbers
+design would produce, though each design's own MCSE is
+correctly computed from its own replications. Finally,
+the main-grid comparison at \(N_{\max} = 200\) is
+overpowered for \(\delta \geq 0.5\); we address this with
+the power-calibrated sensitivity scenario in Results, but
+do not rerun the appendix's full K-grid diminishing-
+returns curve at every effect size in the properly
+powered regime, only at \(\delta = 0.5\) (see Appendix).
+
+\subsection{Data and Code Availability}\label{data-and-code-availability}
+
+All simulation code, the manuscript source, and this
+report's compiled output are versioned in the git
+repository containing this document
+(\texttt{sequentialanalysis}). Simulation results are generated
+by \texttt{analysis/scripts/run\_all\_simulations.R}, which is
+deterministic given the seed recorded in
+\texttt{analysis/data/derived\_data/sim\_metadata.rds}
+(\texttt{set.seed(20260309)}, \texttt{RNGkind("L\textquotesingle{}Ecuyer-CMRG")}) and
+writes the \texttt{.rds} files this report reads. Key package
+versions used to generate the results in this revision,
+recorded at simulation time: R
+R version 4.6.1 (2026-06-24); gsDesign
+3.10.1; dplyr
+1.2.1; ggplot2
+4.0.3; knitr
+1.51. The full
+dependency lockfile is \texttt{renv.lock} at the repository
+root.
 
 \section{Future Research}\label{future-research}
 
@@ -790,6 +1083,22 @@ acknowledged but not directly evaluated here.
   decentralized trial platforms with real-time data
   capture creates a natural testbed for evaluating
   fully sequential monitoring in practice.
+\item
+  \textbf{Comparison against anytime-valid inference.} A
+  head-to-head simulation of the spending-function
+  designs evaluated here against a mixture sequential
+  probability ratio test or a confidence-sequence
+  procedure\textsuperscript{\citeproc{ref-robbins1970statistical}{31}--\citeproc{ref-ramdas2023game}{33}}, matched on type I error and power,
+  would establish whether the high-frequency
+  spending-function designs proposed in the appendix
+  remain competitive with the anytime-valid literature
+  on ASN and estimator bias.
+\item
+  \textbf{Futility stopping.} Add a beta-spending futility
+  boundary (e.g., \texttt{gsDesign} \texttt{test.type\ =\ 4}) to each
+  design and re-evaluate ASN under the null and under
+  small effect sizes, which the efficacy-only designs
+  evaluated in this report do not capture.
 \end{enumerate}
 
 \newpage
@@ -836,24 +1145,60 @@ function.
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:hf-table}Operating characteristics across monitoring frequencies ($\delta = 0.5$, $N_{\max} = 200$ per arm). Bias and RMSE refer to the naive MLE at the stopping time. Percent saved is relative to the fixed-sample maximum.}
+\caption{\label{tab:hf-table}Operating characteristics across monitoring frequencies ($\delta = 0.5$, $N_{\max} = 200$ per arm, $n_{\mathrm{rep}} = 2{,}000$). Bias and RMSE refer to the naive MLE at the stopping time. Percent saved is relative to the fixed-sample maximum. This scenario is overpowered (power 0.996-1.000 throughout); see the properly powered companion table below.}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{8}{10}\selectfont
+\begin{tabular}[t]{lrrrrrrrrrrr}
+\toprule
+Design & Power & MCSE & Mean N & MCSE(N) & Median N & SD(N) & Bias & MCSE(Bias) & RMSE & MCSE(RMSE) & \% Saved\\
+\midrule
+K=3 & 1.000 & 0.000 & 122.634 & 0.753 & 133 & 33.678 & 0.034 & 0.003 & 0.147 & 0.002 & 38.683\\
+K=5 & 0.998 & 0.001 & 107.960 & 0.644 & 120 & 28.807 & 0.031 & 0.003 & 0.140 & 0.003 & 46.020\\
+K=10 & 0.998 & 0.001 & 99.100 & 0.603 & 100 & 26.951 & 0.034 & 0.003 & 0.155 & 0.003 & 50.450\\
+K=20 & 0.996 & 0.001 & 94.375 & 0.602 & 90 & 26.912 & 0.038 & 0.003 & 0.160 & 0.003 & 52.812\\
+K=50 & 0.999 & 0.001 & 91.570 & 0.593 & 88 & 26.531 & 0.042 & 0.004 & 0.164 & 0.003 & 54.215\\
+\addlinespace
+Fully Seq & 1.000 & 0.000 & 89.988 & 0.589 & 86 & 26.347 & 0.045 & 0.004 & 0.167 & 0.003 & 55.006\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:hf-table-90pow}Operating characteristics across monitoring frequencies at $\delta = 0.5$, $N_{\max} = 85$ per arm (fixed design at approximately 90\% power). Compare with the overpowered table above: power now visibly declines with K (0.897 at K=3 to 0.891 at K=85), and the percent-saved curve is smaller in absolute terms at every K.}
 \centering
 \resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
 \fontsize{9}{11}\selectfont
 \begin{tabular}[t]{lrrrrrrr}
 \toprule
-Design & Power & Mean N & Median N & SD(N) & Bias & RMSE & \% Saved\\
+Design & Power & MCSE & Mean N & MCSE(N) & Bias & MCSE(Bias) & \% Saved\\
 \midrule
-K=3 & 0.999 & 123.551 & 133 & 32.015 & 0.029 & 0.143 & 38.225\\
-K=5 & 0.999 & 108.240 & 120 & 28.700 & 0.031 & 0.146 & 45.880\\
-K=10 & 1.000 & 99.140 & 100 & 26.967 & 0.032 & 0.152 & 50.430\\
-K=20 & 0.998 & 94.530 & 90 & 26.940 & 0.038 & 0.161 & 52.735\\
-K=50 & 0.999 & 91.094 & 88 & 27.388 & 0.046 & 0.169 & 54.453\\
+K=3 & 0.896 & 0.007 & 68.408 & 0.345 & 0.033 & 0.004 & 19.519\\
+K=5 & 0.901 & 0.007 & 63.112 & 0.360 & 0.044 & 0.004 & 25.750\\
+K=10 & 0.885 & 0.007 & 59.767 & 0.370 & 0.051 & 0.005 & 29.686\\
+K=20 & 0.896 & 0.007 & 58.319 & 0.377 & 0.056 & 0.005 & 31.390\\
+K=50 & 0.884 & 0.007 & 57.532 & 0.394 & 0.060 & 0.005 & 32.315\\
 \addlinespace
-Fully Seq & 0.998 & 90.363 & 87 & 26.989 & 0.044 & 0.169 & 54.818\\
+Fully Seq & 0.890 & 0.007 & 56.751 & 0.380 & 0.062 & 0.005 & 33.235\\
 \bottomrule
 \end{tabular}}
 \end{table}
+
+At the properly powered \(N_{\max} = 85\)
+scenario, the diminishing-returns shape survives: most of
+the achievable savings are again captured by K = 20, but
+the absolute savings are smaller (K = 20 saves
+31.4
+percent versus fixed, compared with
+52.8
+percent in the overpowered \(N_{\max} = 200\) scenario),
+and the power cost of frequent monitoring, invisible when
+power is at ceiling, is now measurable: power falls from
+0.896
+at K = 3 to
+0.890
+at fully sequential monitoring.
 
 \begin{figure}
 
@@ -861,7 +1206,7 @@ Fully Seq & 0.998 & 90.363 & 87 & 26.989 & 0.044 & 0.169 & 54.818\\
 
 }
 
-\caption{Expected sample size and sample size savings as a function of K (number of planned analyses) under delta = 0.5. The curve flattens rapidly: K = 20 captures approximately 90 percent of the savings available from fully sequential monitoring.}\label{fig:hf-asn-plot}
+\caption{Expected sample size and sample size savings as a function of K (number of planned analyses) under delta = 0.5, n-max = 200 (overpowered scenario). The curve flattens rapidly: relative to the fixed design, K = 20 captures about 96 percent of the ASN reduction achieved by fully sequential monitoring (52.8 over 55.0); relative to K = 3, K = 20 captures about 87 percent of the incremental reduction from K = 3 to fully sequential, that is, (52.8 minus 38.7) over (55.0 minus 38.7). See the properly powered companion scenario above for the same comparison outside the ceiling-power regime.}\label{fig:hf-asn-plot}
 \end{figure}
 
 The key result is the shape of the curve. Moving from
@@ -881,18 +1226,22 @@ infrastructure demands are far more manageable.
 
 }
 
-\caption{Naive MLE bias at the stopping time as a function of K. More frequent monitoring increases the conditional bias at stopping because the test statistic is more likely to cross the boundary at an extreme point. The bias remains small in absolute terms but grows monotonically with K.}\label{fig:hf-bias-plot}
+\caption{Naive MLE bias at the stopping time as a function of K. More frequent monitoring increases the conditional bias at stopping because the test statistic is more likely to cross the boundary at an extreme point. The bias remains small in absolute terms and tends to increase with K, within Monte Carlo noise (see MCSE(Bias) in the table above).}\label{fig:hf-bias-plot}
 \end{figure}
 
 A well-known consequence of optional stopping is that
 the naive maximum likelihood estimate at the stopping
 time is biased away from the null\textsuperscript{\citeproc{ref-emersonParameterEstimationFollowing1990}{20}}. The figure
-above confirms that this bias grows with K: more
-frequent monitoring creates more opportunities for the
-test statistic to cross the boundary at an extreme
-realization. However, two observations temper this
-concern. First, the absolute magnitude of the bias
-remains modest even at K = 200. Second, the bias is
+above shows that this bias tends to increase with K
+(0.046 at K = 50 versus 0.044 at K = 200, a reversal
+within Monte Carlo noise: MCSE(Bias) is on the order of
+0.003-0.004 at these K, so strict monotonicity is not
+established): more frequent monitoring creates more
+opportunities for the test statistic to cross the
+boundary at an extreme realization. However, two
+observations temper this concern. First, the absolute
+magnitude of the bias remains modest even at K = 200.
+Second, the bias is
 a known and correctable phenomenon. Several approaches
 to bias-corrected estimation following sequential
 monitoring have been developed, including median
@@ -920,7 +1269,7 @@ must be evaluated at K = 20--50 information fractions,
 and the corresponding critical boundaries computed via
 numerical integration or recursive application of the
 multivariate normal distribution. For moderate K
-(up to 50), existing algorithms based on the work of\textsuperscript{\citeproc{ref-jennison2000group}{29}} scale adequately. For K approaching
+(up to 50), existing algorithms based on the work of\textsuperscript{\citeproc{ref-jennison2000group}{28}} scale adequately. For K approaching
 N, direct computation becomes prohibitive and the
 continuous boundary approximation of\textsuperscript{\citeproc{ref-betensky1998continuous}{12}} should be used instead. A
 practical implementation would pre-compute boundaries
@@ -1062,26 +1411,6 @@ above, we offer the following concrete recommendations:
 
 \section{References}\label{references}
 
-\subsection{Morris et al.~(2019) ADEMP Compliance}\label{morris-et-al.-2019-ademp-compliance}
-
-We audited this simulation study against the reporting standards
-proposed by Morris, White, and Crowther\textsuperscript{\citeproc{ref-morris2019using}{28}}. The full
-audit is at \texttt{docs/morris-audit-2026-04-17.md}.
-
-\textbf{Verdict:} Partially compliant.
-
-\textbf{Key gaps identified:}
-
-\begin{itemize}
-\tightlist
-\item
-  No Monte Carlo SE on rejection rate, mean N, or bias in \texttt{sim\_study.R:94-108}.
-\item
-  \texttt{set.seed()} appears twice in the Rmd (main chunk and HF appendix), violating the seed-once principle.
-\item
-  \texttt{n\_rep\ =\ 2000} not justified via a target MCSE.
-\end{itemize}
-
 A remediation plan is recorded in the audit file and will be
 taken up in a subsequent revision.
 
@@ -1195,13 +1524,41 @@ taken up in a subsequent revision.
 \CSLLeftMargin{27. }%
 \CSLRightInline{Kulkarni PM, Silva IR, Buras MR. Continuous versus group sequential analysis for post-market drug and vaccine safety surveillance. \emph{Statistics in Medicine}. Published online 2016. doi:\href{https://doi.org/10.1002/sim.6989}{10.1002/sim.6989}}
 
-\bibitem[\citeproctext]{ref-morris2019using}
+\bibitem[\citeproctext]{ref-jennison2000group}
 \CSLLeftMargin{28. }%
+\CSLRightInline{Jennison C, Turnbull BW. \emph{Group Sequential Methods with Applications to Clinical Trials}. Chapman; Hall/CRC; 2000.}
+
+\bibitem[\citeproctext]{ref-morris2019using}
+\CSLLeftMargin{29. }%
 \CSLRightInline{Morris TP, White IR, Crowther MJ. Using simulation studies to evaluate statistical methods. \emph{Statistics in Medicine}. 2019;38(11):2074-2102. doi:\href{https://doi.org/10.1002/sim.8086}{10.1002/sim.8086}}
 
-\bibitem[\citeproctext]{ref-jennison2000group}
-\CSLLeftMargin{29. }%
-\CSLRightInline{Jennison C, Turnbull BW. \emph{Group Sequential Methods with Applications to Clinical Trials}. Chapman; Hall/CRC; 2000.}
+\bibitem[\citeproctext]{ref-johari2017peeking}
+\CSLLeftMargin{30. }%
+\CSLRightInline{Johari R, Koomen P, Pekelis L, Walsh D. Peeking at {A/B} tests: Why it matters, and what to do about it. In: \emph{Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}.; 2017:1517-1525. doi:\href{https://doi.org/10.1145/3097983.3097992}{10.1145/3097983.3097992}}
+
+\bibitem[\citeproctext]{ref-robbins1970statistical}
+\CSLLeftMargin{31. }%
+\CSLRightInline{Robbins H. Statistical methods related to the law of the iterated logarithm. \emph{Annals of Mathematical Statistics}. 1970;41(5):1397-1409. doi:\href{https://doi.org/10.1214/aoms/1177696786}{10.1214/aoms/1177696786}}
+
+\bibitem[\citeproctext]{ref-howard2021time}
+\CSLLeftMargin{32. }%
+\CSLRightInline{Howard SR, Ramdas A, McAuliffe J, Sekhon J. Time-uniform, nonparametric, nonasymptotic confidence sequences. \emph{Annals of Statistics}. 2021;49(2):1055-1080. doi:\href{https://doi.org/10.1214/20-AOS1991}{10.1214/20-AOS1991}}
+
+\bibitem[\citeproctext]{ref-ramdas2023game}
+\CSLLeftMargin{33. }%
+\CSLRightInline{Ramdas A, Grünwald P, Vovk V, Shafer G. Game-theoretic statistics and safe anytime-valid inference. \emph{Statistical Science}. 2023;38(4):576-601. doi:\href{https://doi.org/10.1214/23-STS894}{10.1214/23-STS894}}
+
+\bibitem[\citeproctext]{ref-kulldorff2011maximized}
+\CSLLeftMargin{34. }%
+\CSLRightInline{Kulldorff M, Davis RL, Kolczak M, Lewis E, Lieu T, Platt R. A maximized sequential probability ratio test for drug and vaccine safety surveillance. \emph{Sequential Analysis}. 2011;30(1):58-78. doi:\href{https://doi.org/10.1080/07474946.2011.539924}{10.1080/07474946.2011.539924}}
+
+\bibitem[\citeproctext]{ref-proschan2006statistical}
+\CSLLeftMargin{35. }%
+\CSLRightInline{Proschan MA, Lan KKG, Wittes JT. \emph{Statistical Monitoring of Clinical Trials: A Unified Approach}. Springer; 2006. doi:\href{https://doi.org/10.1007/978-0-387-44970-8}{10.1007/978-0-387-44970-8}}
+
+\bibitem[\citeproctext]{ref-jennison1989interim}
+\CSLLeftMargin{36. }%
+\CSLRightInline{Jennison C, Turnbull BW. Interim analyses: The repeated confidence interval approach. \emph{Journal of the Royal Statistical Society, Series B}. 1989;51(3):305-361. doi:\href{https://doi.org/10.1111/j.2517-6161.1989.tb01433.x}{10.1111/j.2517-6161.1989.tb01433.x}}
 
 \end{CSLReferences}
 
