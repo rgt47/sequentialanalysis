@@ -5,27 +5,26 @@ title: "Fully Sequential Analysis Revisited:
 author: "Ronald G. Thomas, Ph.D.\\thanks{Wertheim School of Public Health, UCSD; ORCID: 0000-0003-1686-4965}"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 abstract: |
-  Fully sequential analysis, in which the cumulative
-  test statistic is evaluated after each individual
-  observation, was the original framework for interim
-  monitoring in clinical trials. Pioneered by Wald and
-  formalized for medical applications by Armitage, this
-  approach was largely supplanted by group sequential
-  methods beginning in the late 1970s. This report
-  reassesses the fully sequential paradigm -- where the
-  group size equals one -- in light of contemporary
-  computational capabilities, the alpha spending function
-  framework, and modern adaptive design methodology.
-  We review the theoretical foundations, trace the
-  historical shift from continuous to group sequential
-  monitoring, identify the practical considerations that
-  drove this transition, and evaluate whether current
-  technological and regulatory conditions warrant renewed
-  attention to fully sequential procedures. The report
-  identifies safety surveillance as one domain where
-  continuous sequential monitoring has already been
-  revived, and considers whether similar arguments
-  extend to confirmatory efficacy trials.
+  Fully sequential analysis evaluates the cumulative test
+  statistic after each individual observation. It was the
+  original framework for interim monitoring in clinical
+  trials. Wald pioneered the approach, and Armitage
+  formalized it for medical applications. Group sequential
+  methods largely supplanted it beginning in the late
+  1970s. We reassess the fully sequential paradigm --
+  where the group size equals one -- in light of
+  contemporary computational capabilities, the alpha
+  spending function framework, and modern adaptive design
+  methodology. We review the theoretical foundations and
+  trace the historical shift from continuous to group
+  sequential monitoring. We identify the practical
+  considerations that drove this transition. We then
+  evaluate whether current technological and regulatory
+  conditions warrant renewed attention to fully sequential
+  procedures. We identify safety surveillance as one
+  domain where continuous sequential monitoring has
+  already been revived, and we consider whether similar
+  arguments extend to confirmatory efficacy trials.
 output:
   bookdown::pdf_document2:
     latex_engine: xelatex
