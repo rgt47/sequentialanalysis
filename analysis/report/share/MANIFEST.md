@@ -6,3 +6,4 @@
 |---|---|---|---|
 | `report-2026-08-20-1323-3fc5c0b-wip.pdf` | `~/prj/res/20-sequential-analysis/sequentialanalysis/analysis/report/report.Rmd` | `3fc5c0b-wip` | 2026-08-20 13:23 PDT |
 | `report-2026-08-20-1324-3fc5c0b-wip.pdf` | `~/prj/res/20-sequential-analysis/sequentialanalysis/analysis/report/report.Rmd` | `3fc5c0b-wip` | 2026-08-20 13:24 PDT |
+| `report-2026-11-19-1441-5444109-wip.pdf` | `~/prj/res/20-sequential-analysis/sequentialanalysis/analysis/report/report.Rmd` | `5444109-wip` | 2026-11-19 14:41 PST |

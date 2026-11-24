@@ -3,6 +3,47 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 
+look_schedule <- function(k, n_max) {
+  look_n <- round(seq(1 / k, 1, length.out = k) * n_max)
+  look_n[k] <- n_max
+  stopifnot(!anyDuplicated(look_n), all(look_n >= 1))
+  look_n
+}
+
+# Exact operating characteristics by recursive numerical integration
+# (Jennison and Turnbull 2000), using the same boundaries
+# as the simulation. The two-sample z-statistic after n pairs has
+# mean (delta / sqrt(2 sigma^2)) sqrt(n), so theta = delta / sqrt(2)
+# with information measured in pairs. gsProbability() caps k at 30,
+# so the internal integrator gsprob() is called directly. A finer
+# grid (r = 80, default 18) is needed at k = n_max, where r = 18
+# returns invalid probabilities for large drifts. At r = 80 the
+# results agree with r = 40 to within 1e-5 in rejection probability
+# and 0.001 pairs in expected sample size. `overrun` is the
+# number of pipeline pairs enrolled but not yet observed at each
+# interim look; it inflates expected enrollment, not the decision.
+exact_oc <- function(k, n_max, delta, sigma = 1, alpha = 0.05,
+                     overrun = 0, r = 80) {
+  bnd <- compute_boundaries(k, n_max, alpha = alpha)
+  look_n <- look_schedule(k, n_max)
+  b <- bnd$z_upper
+  p <- gsDesign:::gsprob(
+    theta = delta / (sigma * sqrt(2)), I = look_n,
+    a = -b, b = b, r = r, overrun = overrun
+  )
+  prob_stop <- as.vector(p$probhi + p$problo)
+  stopifnot(all(prob_stop >= -1e-12), sum(prob_stop) <= 1 + 1e-5)
+  tibble(
+    k = k,
+    n_max = n_max,
+    delta = delta,
+    overrun = overrun,
+    reject = sum(prob_stop),
+    reject_lower = sum(p$problo),
+    expected_n = p$en
+  )
+}
+
 compute_boundaries <- function(k, n_max, alpha = 0.05) {
   if (k == 1) {
     return(list(
@@ -10,7 +51,12 @@ compute_boundaries <- function(k, n_max, alpha = 0.05) {
       info_frac = 1
     ))
   }
-  info_frac <- seq(1 / k, 1, length.out = k)
+  # Boundaries are computed at the realized information fractions
+  # (rounded pair counts over n_max), not the nominal 1/k grid, so
+  # that each boundary matches the look at which it is applied.
+  # round(info_frac * n_max) in the simulators recovers look_n.
+  look_n <- look_schedule(k, n_max)
+  info_frac <- look_n / n_max
   des <- gsDesign(
     k = k,
     test.type = 2,

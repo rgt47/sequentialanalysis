@@ -74,6 +74,51 @@ expect_equal(
   info = "k = 5 equally spaced information fractions"
 )
 
+## Look schedule alignment (referee report 2026-11-18, M7): the
+## boundaries must be computed at the realized fractions of the
+## looks at which they are applied.
+bnd_85_20 <- compute_boundaries(k = 20, n_max = 85)
+looks_85_20 <- look_schedule(20, 85)
+expect_equal(
+  bnd_85_20$info_frac, looks_85_20 / 85,
+  info = "information fractions equal realized looks over n_max"
+)
+expect_equal(
+  round(bnd_85_20$info_frac * 85), looks_85_20,
+  info = "simulators recover the same integer looks"
+)
+expect_equal(
+  look_schedule(200, 200), 1:200,
+  info = "fully sequential design looks after every pair"
+)
+
+## exact_oc --------------------------------------------------------
+
+expect_equal(
+  exact_oc(1, 85, 0.5)$reject,
+  (1 - pnorm(qnorm(0.975) - 0.5 * sqrt(85 / 2))) +
+    pnorm(-qnorm(0.975) - 0.5 * sqrt(85 / 2)),
+  tolerance = 1e-6,
+  info = "fixed-design exact power matches the closed form"
+)
+for (k in c(5, 20)) {
+  expect_equal(
+    exact_oc(k, 85, 0)$reject, 0.05, tolerance = 1e-4,
+    info = paste("exact type I error is nominal at K =", k)
+  )
+}
+ex_seq <- exact_oc(85, 85, 0.5)
+expect_true(
+  ex_seq$reject < exact_oc(1, 85, 0.5)$reject &&
+    ex_seq$expected_n < 85,
+  info = "fully sequential: lower power, lower ASN than fixed"
+)
+expect_true(
+  exact_oc(20, 85, 0.5, overrun = 10)$expected_n >
+    exact_oc(20, 85, 0.5)$expected_n,
+  info = "a response pipeline raises expected enrollment"
+)
+
 ## simulate_one_trial ---------------------------------------------
 
 set.seed(1)

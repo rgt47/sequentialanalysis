@@ -87,6 +87,46 @@ hf_results_90pow <- run_hf_simulation(
   k_values = c(3, 5, 10, 20, 50, n90)
 )
 
+## Referee report 2026-11-18, M3, M5, M6, M8: exact operating
+## characteristics by numerical integration (no Monte Carlo error),
+## using the same boundaries and look schedule as the simulation.
+## These are deterministic and do not consume the RNG stream.
+k_grid <- function(n_max) c(1, 3, 5, 10, 20, 50, n_max)
+exact_oc_grid <- bind_rows(
+  expand_grid(n_max = 200, k = k_grid(200),
+    delta = c(0, 0.2, 0.5, 0.8)),
+  expand_grid(n_max = n90, k = k_grid(n90),
+    delta = c(0, 0.2, 0.5, 0.8))
+) |>
+  pmap_dfr(function(n_max, k, delta) exact_oc(k, n_max, delta))
+
+## Maximum-sample-size inflation needed to hold 90% power at the
+## design alternative, relative to the fixed design (M6). Uses
+## gsDesign's own equally spaced design for each K.
+exact_inflation <- map_dfr(c(3, 5, 10, 20, 50, n90, 200),
+  function(k) {
+    g <- gsDesign(k = k, test.type = 2, alpha = 0.025,
+      beta = 0.1, sfu = sfLDOF)
+    tibble(k = k, inflation = g$n.I[k])
+  })
+
+## Delayed response (M8). `overrun` pairs are enrolled but not yet
+## observed at each interim look. The values 0, 5, 10, 20 pairs are
+## illustrative (for example, 10 pairs = a 1-month response lag at
+## 10 pairs per month of accrual); they are not taken from any trial.
+exact_pipeline <- expand_grid(
+  k = k_grid(n90), delta = c(0, 0.5), overrun = c(0, 5, 10, 20)
+) |>
+  pmap_dfr(function(k, delta, overrun) {
+    exact_oc(k, n90, delta, overrun = overrun)
+  })
+
+exact_results <- list(
+  oc = exact_oc_grid,
+  inflation = exact_inflation,
+  pipeline = exact_pipeline
+)
+
 metadata <- list(
   seed = seed,
   rngkind = RNGkind(),
@@ -112,6 +152,7 @@ saveRDS(hf_results, file.path(out_dir, "hf_results.rds"))
 saveRDS(
   hf_results_90pow, file.path(out_dir, "hf_results_90pow.rds")
 )
+saveRDS(exact_results, file.path(out_dir, "exact_results.rds"))
 saveRDS(metadata, file.path(out_dir, "sim_metadata.rds"))
 
 cat("Wrote simulation outputs to", out_dir, "\n")

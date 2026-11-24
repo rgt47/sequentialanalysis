@@ -5,26 +5,22 @@ title: "Fully Sequential Analysis Revisited:
 author: "Ronald G. Thomas, Ph.D.\\thanks{Wertheim School of Public Health, UCSD; ORCID: 0000-0003-1686-4965}"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 abstract: |
-  Fully sequential analysis evaluates the cumulative test
-  statistic after each individual observation. It was the
-  original framework for interim monitoring in clinical
-  trials. Wald pioneered the approach, and Armitage
-  formalized it for medical applications. Group sequential
-  methods largely supplanted it beginning in the late
-  1970s. We reassess the fully sequential paradigm --
-  where the group size equals one -- in light of
-  contemporary computational capabilities, the alpha
-  spending function framework, and modern adaptive design
-  methodology. We review the theoretical foundations and
-  trace the historical shift from continuous to group
-  sequential monitoring. We identify the practical
-  considerations that drove this transition. We then
-  evaluate whether current technological and regulatory
-  conditions warrant renewed attention to fully sequential
-  procedures. We identify safety surveillance as one
-  domain where continuous sequential monitoring has
-  already been revived, and we consider whether similar
-  arguments extend to confirmatory efficacy trials.
+  Fully sequential analysis tests the data after every
+  response. Group sequential methods with few looks
+  replaced it from the late 1970s. This paper asks
+  whether modern computing and the alpha spending
+  function justify more frequent monitoring. We compare a
+  fixed design with O'Brien-Fleming spending designs
+  using 3 to 50 looks or one per pair. The trial has two
+  arms and a normal outcome with known variance. By exact
+  calculation, type I error stays at 0.05 for every
+  number of looks. In a trial sized for 90 percent power,
+  one look per pair cuts expected sample size by about a
+  third. Power falls by about 1.5 percentage points.
+  Twenty looks capture most of this gain. A response lag
+  reduces the gain. These results largely agree with
+  known theory. We suggest about 20 looks as a default
+  for trials with fast responses.
 output:
   bookdown::pdf_document2:
     latex_engine: xelatex
@@ -62,238 +58,250 @@ knitr::opts_chunk$set(
   out.width = "90%",
   fig.align = "center"
 )
+derived_dir <- here::here("analysis", "data", "derived_data")
+# Exact operating characteristics; written by
+# analysis/scripts/run_all_simulations.R (see Reproducibility).
+exact_res <- readRDS(file.path(derived_dir, "exact_results.rds"))
+ex_get <- function(k, n_max, delta, col = "reject",
+                   overrun = 0, tab = exact_res$oc) {
+  out <- tab[[col]][tab$k == k & tab$n_max == n_max &
+    tab$delta == delta & tab$overrun == overrun]
+  stopifnot(length(out) == 1)
+  out
+}
+ex_infl <- function(k) {
+  exact_res$inflation$inflation[exact_res$inflation$k == k]
+}
 ```
 
 # Introduction
 
 We begin with one of the oldest problems in sequential
-statistics: monitoring accumulating data in a clinical
-trial and potentially stopping the study before all
-planned observations have been collected. The
-theoretical foundations were laid by
-@wald1945sequential, who introduced the sequential
-probability ratio test (SPRT) for testing simple
-hypotheses under continuous monitoring. Wald showed
-that the SPRT is optimal in a precise sense: it
-minimizes the expected sample size among all tests with
-the same type I and type II error rates
-[@wald1947sequential]. This result established a
-powerful intellectual framework. If one can evaluate
-the accumulating evidence after every single
-observation, one can, on average, reach a decision with
-fewer subjects than any fixed-sample design would
+statistics. The problem is how to monitor accumulating
+data in a clinical trial, and possibly stop the study
+before all planned observations have been collected.
+@wald1945sequential laid the theoretical foundations.
+He introduced the sequential probability ratio test
+(SPRT) for testing simple hypotheses under continuous
+monitoring. Wald showed that the SPRT is optimal in a
+precise sense. Among all tests with the same type I and
+type II error rates, it minimizes the expected sample
+size [@wald1947sequential]. This result established a
+strong intellectual framework. That is, suppose one can
+evaluate the accumulating evidence after every single
+observation. Then one can, on average, reach a decision
+with fewer subjects than any fixed-sample design would
 require.
 
 ## Armitage and Sequential Medical Trials
 
-The application of Wald's ideas to medical research was
-championed by @armitage1975sequential, whose monograph
+@armitage1975sequential championed the application of
+Wald's ideas to medical research. His monograph
 *Sequential Medical Trials* became the standard
 reference for what we now call fully sequential
 analysis. In Armitage's framework, the test statistic
 is recalculated each time a new patient response
-becomes available, and the result is compared against
+becomes available. The result is then compared against
 pre-specified stopping boundaries. If the statistic
 crosses the upper boundary, the trial stops with
 evidence of a treatment effect. If it crosses the lower
 boundary, the trial stops for futility or for evidence
 of harm. Armitage also developed restricted sequential
 procedures that imposed a maximum sample size. This
-addressed the theoretical concern that the open SPRT
-could, under certain parameter configurations, run
-indefinitely [@armitage1969sequential].
+addressed a theoretical concern about the open SPRT.
+Under certain parameter configurations, the open SPRT
+could run indefinitely [@armitage1969sequential].
 
-The appeal of this approach is clear. By evaluating
-evidence continuously, one could expect to enroll
-substantially fewer patients than a fixed-sample design
-when the true treatment effect was large.
-@armitage1991interim later reflected on the evolution
-of interim analysis methods. He noted both the
-strengths and the practical limitations that
-eventually led the field toward alternative approaches.
+The appeal of this approach is easy to see. With
+continuous evaluation of the evidence, one could expect
+to enroll substantially fewer patients than a
+fixed-sample design when the true treatment effect was
+large. @armitage1991interim later reflected on the
+evolution of interim analysis methods. He noted both
+the strengths and the practical limitations that
+eventually led the field toward other approaches.
 
-## The Group Sequential Revolution
+## The group sequential revolution
 
-Despite the theoretical elegance of fully sequential
-procedures, practical considerations drove a
-fundamental shift in how clinical trials were
-monitored. @pocock1977group proposed the group
-sequential approach, in which the test statistic is
+Fully sequential procedures are theoretically elegant.
+However, practical considerations drove a fundamental
+shift in how clinical trials were monitored.
+@pocock1977group proposed the group sequential
+approach. In this approach the test statistic is
 evaluated only at a small number of pre-planned interim
-analyses, each conducted after a group of patients has
-completed follow-up. Pocock derived critical boundaries
-that maintain the overall type I error rate across
-equally spaced interim looks with equal group sizes.
+analyses. Each analysis is conducted after a group of
+patients has completed follow-up. Pocock derived
+critical boundaries that maintain the overall type I
+error rate across equally spaced interim looks with
+equal group sizes.
 
-Shortly thereafter, @obrien1979multiple introduced an
-alternative boundary shape now universally known as the
-O'Brien-Fleming boundary. Unlike the Pocock boundary,
-which uses a constant critical value at each analysis,
-the O'Brien-Fleming boundary is extremely conservative
-at early interim analyses. It approaches the
-fixed-sample critical value only at the final analysis.
-This property proved highly attractive in practice. It
-preserves nearly all of the power of a fixed-sample
-design while still permitting early termination when
-the treatment effect is overwhelming.
+Shortly thereafter, @obrien1979multiple introduced
+another boundary shape, now universally known as the
+O'Brien-Fleming boundary. The Pocock boundary uses a
+constant critical value at each analysis. The
+O'Brien-Fleming boundary, by contrast, is extremely
+conservative at early interim analyses. It approaches
+the fixed-sample critical value only at the final
+analysis. This property proved highly attractive in
+practice. It preserves nearly all of the power of a
+fixed-sample design. At the same time, it still permits
+early termination when the treatment effect is
+overwhelming.
 
-The group sequential framework was further refined by
-@fleming1984designs, who developed a general class of
-boundary shapes parameterized to interpolate between
-the Pocock and O'Brien-Fleming extremes.
+@fleming1984designs further refined the group
+sequential framework with additional designs for group
+sequential tests. @wang1987approximately then gave a
+one-parameter family of boundaries. The family includes
+the Pocock and O'Brien-Fleming shapes as special cases
+and spans the range between them.
 
-## The Alpha Spending Function
+## The alpha spending function
 
-A crucial theoretical advance ultimately bridged the
-gap between fully sequential and group sequential
-methods: the alpha spending function introduced by
-@lan1983discrete. Rather than requiring the number and
-timing of interim analyses to be fixed in advance, the
-spending function approach specifies only the rate at
+A major theoretical advance ultimately bridged the gap
+between fully sequential and group sequential methods.
+This was the alpha spending function introduced by
+@lan1983discrete. The spending function approach does
+not require the number and timing of interim analyses
+to be fixed in advance. It specifies only the rate at
 which type I error probability is 'spent' as a function
 of the information fraction. This permits considerable
 flexibility. The number of interim analyses, the timing
 of each, and even the group sizes can vary without
-inflating the type I error rate, provided that the
-cumulative alpha spent at each analysis respects the
-pre-specified spending function.
+inflating the type I error rate. The condition is that
+the cumulative alpha spent at each analysis respects
+the pre-specified spending function.
 
 @demetsInterimAnalysisAlpha1994 provided a comprehensive
-exposition of the approach. They demonstrated that
-Pocock- and O'Brien-Fleming-type boundaries can be
-recovered as special cases of particular spending
-functions. The Hwang-Shih-De Cani family of spending
-functions [@hwang1990group] offered a further
-parameterization encompassing a wide range of boundary
-shapes, including those more conservative than
-O'Brien-Fleming and those more aggressive than Pocock.
+exposition of the approach. They showed that Pocock-
+and O'Brien-Fleming-type boundaries can be recovered as
+special cases of particular spending functions. The
+Hwang-Shih-De Cani family of spending functions
+[@hwang1990group] offered a further parameterization.
+It covers a wide range of boundary shapes. These
+include shapes more conservative than O'Brien-Fleming
+and shapes more aggressive than Pocock.
 
 The spending function framework is directly relevant to
-the fully sequential paradigm. It can, in principle,
+the fully sequential paradigm. In principle, it can
 accommodate an arbitrarily large number of analyses,
 including the limiting case of continuous monitoring.
-@betensky1998continuous explicitly demonstrated the
-construction of a continuous stopping boundary from an
-alpha spending function. This provided the mathematical
+@betensky1998continuous explicitly showed how to
+construct a continuous stopping boundary from an alpha
+spending function. This provided the mathematical
 machinery needed to implement fully sequential
 monitoring within the modern spending function
 framework. This result is central to our reassessment.
 It implies that fully sequential analysis with group
 size one is not a fundamentally different methodology
-from group sequential analysis, but rather the limiting
-case of the same framework.
+from group sequential analysis. Rather, it is the
+limiting case of the same framework.
 
-## The Triangular Test
+## The triangular test
 
-A parallel line of development was pursued by
-@whitehead1983triangular, who proposed the triangular
-test. This sequential procedure allows stopping for
-both efficacy and futility while maintaining
-approximately optimal expected sample size properties.
-@whitehead1997design extended this into a comprehensive
-methodology for sequential clinical trials, including
-the double triangular test for two-sided alternatives.
-The triangular test occupies a conceptual middle ground
+@whitehead1983triangular pursued a parallel line of
+development. They proposed the triangular test. This
+sequential procedure allows stopping for both efficacy
+and futility. It maintains approximately optimal
+expected sample size properties. @whitehead1997design
+extended this into a comprehensive methodology for
+sequential clinical trials. This included the double
+triangular test for two-sided alternatives. The
+triangular test occupies a conceptual middle ground
 between fully sequential and group sequential methods.
 It permits frequent interim analyses, though not
-necessarily after every observation, and it provides
-natural boundaries for both early stopping directions.
+necessarily after every observation. It also provides
+natural boundaries for both directions of early
+stopping.
 
-@whitehead2013evolution provided a valuable historical
-account of the evolution from Wald's SPRT, through
-Armitage's restricted procedures, to the group
-sequential and adaptive designs that dominate
-contemporary practice. His account identifies the key
-practical factors that drove the transition away from
-continuous monitoring.
+@armitage2014evolution gave a historical account of how
+methods for deciding when a trial should stop
+recruiting have evolved.
 
-## Why the Field Moved to Group Sequential Methods
+## Why the field moved to group sequential methods
 
 Several practical considerations explain why group
 sequential methods eclipsed the fully sequential
-approach, despite the latter's theoretical efficiency
-advantages. We note that the reasons are largely
-logistical rather than statistical:
+approach. This happened despite the latter's
+theoretical efficiency advantages. We note that the
+reasons are largely logistical rather than statistical:
 
-1. **Multi-center trials.** As clinical trials grew
-   larger and were conducted across multiple sites,
-   it became logistically infeasible to update and
+1. Multi-center trials. Clinical trials grew larger
+   and were conducted across multiple sites. It then
+   became logistically infeasible to update and
    evaluate the test statistic after every individual
    response. Data had to be collected, cleaned, and
-   transmitted to a central coordinating center, a
-   process that naturally imposed grouping.
+   transmitted to a central coordinating center. That
+   process naturally imposed grouping.
 
-2. **Delayed outcomes.** When the primary endpoint
-   requires weeks or months to ascertain (e.g.,
-   progression-free survival, functional recovery
-   scores), continuous monitoring after each
-   observation is not meaningful because many
-   previously enrolled patients have not yet
-   contributed their outcomes.
+2. Delayed outcomes. The primary endpoint may require
+   weeks or months to ascertain (e.g., progression-free
+   survival, functional recovery scores). In that case,
+   continuous monitoring after each observation is not
+   meaningful. Many previously enrolled patients have
+   not yet contributed their outcomes.
 
-3. **Data monitoring committees.** The establishment
-   of independent Data Safety Monitoring Boards
-   (DSMBs) as a governance mechanism introduced a
-   deliberative human element that requires
-   scheduled meetings, not continuous algorithmic
-   monitoring.
+3. Data monitoring committees. Independent Data Safety
+   Monitoring Boards (DSMBs) were established as a
+   governance mechanism. They introduced a deliberative
+   human element. That element requires scheduled
+   meetings, not continuous algorithmic monitoring.
 
-4. **Computational limitations.** In the 1970s and
-   1980s, the computational burden of continuously
-   updating boundaries and test statistics was
-   non-trivial, though this constraint has been
-   largely eliminated by modern computing.
+4. Computational limitations. In the 1970s and 1980s,
+   the computational burden of continuously updating
+   boundaries and test statistics was non-trivial.
+   Modern computing has largely eliminated this
+   constraint.
 
-5. **Regulatory practice.** Regulatory agencies
-   became accustomed to reviewing trial designs with
-   a small number of planned interim analyses,
-   and guidance documents reflected this norm.
+5. Regulatory practice. Regulatory agencies became
+   accustomed to reviewing trial designs with a small
+   number of planned interim analyses. Guidance
+   documents reflected this norm.
 
-## Comparison of Fully Sequential and Group Sequential
-   Approaches
+## Comparison of fully sequential and group sequential approaches
 
 @sebille2000comparison conducted a direct comparison of
-four sequential methods: the SPRT, the triangular test,
-and one-parameter boundaries alongside Pocock and
-O'Brien-Fleming group sequential boundaries. They
-evaluated operating characteristics including expected
-sample size, power, and type I error control.
+four sequential methods. These were the SPRT, the
+triangular test, and one-parameter boundaries alongside
+Pocock and O'Brien-Fleming group sequential boundaries.
+They evaluated operating characteristics including
+expected sample size, power, and type I error control.
 @sebille2003sequential provided a more comprehensive
 review contrasting strictly sequential methods with
 group sequential designs. They concluded that the
-theoretical sample size savings of fully sequential
-methods are partially offset by their practical
-complexity.
+practical complexity of fully sequential methods
+partially offsets their theoretical sample size
+savings.
 
 @lai1980sequential established that certain sequential
 stopping rules are asymptotically optimal from both
-Bayesian and frequentist perspectives, which provides
+Bayesian and frequentist perspectives. This provides
 theoretical justification for continuous monitoring
 when it is feasible. @xiong1996continuous extended the
 sequential conditional probability ratio test (SCPRT)
-framework to accommodate both continuous and group
-sequential monitoring within a unified approach. This
-further demonstrates that the boundary between these
-paradigms is more fluid than the dichotomy might
+framework. The extension accommodates both continuous
+and group sequential monitoring within a unified
+approach. This further shows that the boundary between
+these paradigms is more fluid than the dichotomy might
 suggest.
 
-## Post-Estimation Challenges
+## Post-estimation challenges
 
-A well-known complication of sequential analysis,
-whether fully sequential or group sequential, is that
-naive maximum likelihood estimates obtained at the
+Sequential analysis has a well-known complication,
+whether it is fully sequential or group sequential.
+Naive maximum likelihood estimates obtained at the
 stopping time are biased.
 @emersonParameterEstimationFollowing1990 investigated
-parameter estimation following group sequential tests
-and proposed orderings of the sample space that yield
+parameter estimation following group sequential tests.
+They proposed orderings of the sample space that yield
 improved point estimates and confidence intervals.
 These estimation challenges are shared by both
 paradigms. We note, however, that the bias can be more
-pronounced under continuous monitoring, because the
-test statistic is evaluated at a boundary-crossing
-point that is, by construction, extreme.
+pronounced under continuous monitoring. The reason is
+that the test statistic is evaluated at a
+boundary-crossing point that is, by construction,
+extreme.
 
-## Modern Extensions: Longitudinal and Adaptive Designs
+## Modern extensions: longitudinal and adaptive designs
 
 Recent work has extended group sequential methods to
 richer data structures.
@@ -301,51 +309,55 @@ richer data structures.
 longitudinal trials with adaptive choice of follow-up
 time. @jeffriesDetectingTreatmentDifferences2018
 incorporated covariate adjustment in group sequential
-longitudinal studies, and
+longitudinal studies.
 @jeffriesEvaluatingTreatmentEffects2023 further
 generalized these methods to multivariate longitudinal
-endpoints. These developments are relevant because they
-demonstrate the continuing evolution of group
-sequential methodology toward greater flexibility. They
-do not, however, address the question of whether
-reducing the group size to one offers additional
-advantages.
+endpoints. These developments are relevant. They show
+the continuing evolution of group sequential
+methodology toward greater flexibility. They do not,
+however, address whether reducing the group size to
+one offers additional advantages.
 
-The broader adaptive design literature, as codified in
-@wassmer2016group and implemented in software such as
-rpact [@wassmer2023rpact] and gsDesign
-[@anderson2022gsdesign], has focused primarily on
-sample size re-estimation, treatment selection, and
-enrichment designs. These are adaptations that
-presuppose a group sequential monitoring structure.
+The broader adaptive design literature has focused
+primarily on sample size re-estimation, treatment
+selection, and enrichment designs. This literature is
+codified in @wassmer2016group. It is implemented in
+software such as rpact [@wassmer2023rpact] and gsDesign
+[@anderson2022gsdesign]. These adaptations presuppose a
+group sequential monitoring structure.
 
-## Safety Surveillance: A Revival of Continuous Monitoring
+## Safety surveillance: a revival of continuous monitoring
 
-One domain in which fully sequential, or near-fully
-sequential, monitoring has experienced a genuine
-revival is post-market safety surveillance.
-@kulkarni2016continuous compared continuous sequential
-analysis using the maximized sequential probability
-ratio test (maxSPRT) with group sequential methods for
-vaccine safety monitoring. In this setting, the
+Post-market safety surveillance is one domain in which
+fully sequential, or near-fully sequential, monitoring
+has seen a genuine revival. @silva2015continuous
+compared continuous and group sequential analysis for
+post-market drug and vaccine safety surveillance. They
+showed that for any group sequential design there is a
+continuous design that is uniformly better. They
+concluded that surveillance should test each time new
+data arrive. Their setting is a Poisson model with a
+flat boundary on the log likelihood ratio scale. In
+this setting, the
 practical constraints that drove the original move to
 group sequential methods are less binding. Data are
-collected electronically in real time, the 'outcome'
-(an adverse event) is typically ascertained quickly,
-and the monitoring is algorithmic rather than
-committee-based. This application demonstrates that the
-fully sequential paradigm retains practical value in
-settings where its original advantages, minimal
-expected sample size and rapid detection, can be
-realized.
+collected electronically in real time. The 'outcome'
+(an adverse event) is typically ascertained quickly.
+The monitoring is algorithmic rather than
+committee-based. This application shows that the fully
+sequential paradigm retains practical value in some
+settings. These are settings where its original
+advantages, minimal expected sample size and rapid
+detection, can be realized.
 
-## Present Study
+## Present study
 
-We examine whether the fully sequential approach, in
-which the stopping boundary is evaluated after each
-individual response (group size equal to one), merits
+We examine whether the fully sequential approach merits
 reassessment for contemporary clinical trials beyond
-safety surveillance. The question is motivated by
+safety surveillance. In this approach the stopping
+boundary is evaluated after each new response. In our
+two-arm simulation this means one look per enrolled
+treated-control pair. The question is motivated by
 three developments since the 1970s:
 
 1. Modern computing eliminates the historical
@@ -360,24 +372,30 @@ three developments since the 1970s:
 
 We investigate the operating characteristics of a
 fully sequential design (group size one, alpha
-spending function boundaries) relative to standard
-group sequential designs with three to five interim
-analyses. We focus on expected sample size, power, and
-the practical trade-offs involved. The main-body
-comparison (fixed versus K = 3, 5 versus fully
-sequential) largely reproduces a result already
-established by @sebille2000comparison,
-@sebille2003sequential, and @jennison2000group (Chapter
-7): most of the efficiency gain of sequential
-monitoring is captured by a handful of looks. The
-paper's own empirical contribution, developed in the
-Appendix, is the K-grid analysis showing where, between
-K = 5 and K = N, the returns actually diminish, and the
-resulting case for high-frequency monitoring (K =
-20--50) as a practical middle ground. Readers mainly
+spending function boundaries). We compare it with
+standard group sequential designs with three to five
+interim analyses. We focus on expected sample size,
+power, and the practical trade-offs involved. The
+main-body comparison (fixed versus K = 3, 5 versus
+fully sequential) largely reproduces a known result.
+That result was already established by
+@sebille2000comparison, @sebille2003sequential, and
+@jennison2000group (Chapter 7). It states that most of
+the efficiency gain of sequential monitoring is
+captured by a handful of looks. The Appendix extends
+the comparison to a grid of K between 5 and N. It
+shows where the returns in expected sample size
+diminish. This pattern is, at least in part, already
+known from the optimal-design and textbook literature
+[@eales1992improved; @jennison2000group]. What we add is
+an exact calculation of power, expected sample size,
+and maximum-sample-size inflation over that grid. We
+also add a simple delayed-response calculation. On that
+basis we discuss high-frequency monitoring (K = 20 to
+50) as a practical middle ground. Readers mainly
 interested in that contribution can proceed directly
-to the Appendix after the Methods and headline Results
-below.
+to the Appendix. They may do so after the Methods and
+headline Results below.
 
 # Methods
 
@@ -387,29 +405,36 @@ Following Morris, White, and Crowther
 [-@morris2019using], we report the simulation under the
 ADEMP framework.
 
-- **Aims.** Compare the operating characteristics of fixed-sample,
-  group-sequential (K = 3, 5), and fully sequential designs under
-  Lan-DeMets O'Brien-Fleming spending across a range of true
+- Aims. Compare the operating characteristics of fixed-sample,
+  group-sequential (K = 3, 5), and fully sequential designs. All
+  use Lan-DeMets O'Brien-Fleming spending, across a range of true
   treatment effects.
-- **Data-generating mechanism.** Two-arm continuous outcome with
-  known variance; $n_{\max} = 200$ per arm in the main grid, and
-  $n_{\max} = 85$ per arm in the power-calibrated sensitivity
-  scenario (Results).
-- **Estimands.** (i) The binary rejection decision at
+- Data-generating mechanism. Two-arm continuous outcome with
+  known variance. We use $n_{\max} = 200$ per arm in the main
+  grid. We use $n_{\max} = 85$ per arm in the power-calibrated
+  sensitivity scenario (Results).
+- Estimands. (i) The binary rejection decision at
   $\alpha = 0.05$; (ii) expected sample size at stopping; (iii) the
   naive MLE at stop, which exhibits early-stopping bias.
-- **Methods.** Fixed design; group-sequential with K = 3, 5; fully
+- Methods. Fixed design; group-sequential with K = 3, 5; fully
   sequential (K = n_max) in the main grid (Results). The finer
-  K = 3, 5, 10, 20, 50, n_max grid is run only at $\delta = 0.5$, in
-  both the appendix's overpowered scenario ($n_{\max} = 200$) and
-  its power-calibrated companion ($n_{\max} = 85$).
-- **Performance measures.** Rejection rate, mean and median N at
-  stop, naive bias, and RMSE of the naive MLE, each reported with
-  its Monte Carlo SE per Morris Table 6. For rejection-rate MCSE
-  $\leq 1.1$ pp at $p = 0.5$, $n_{\mathrm{rep}} \geq 2{,}066$;
+  K = 3, 5, 10, 20, 50, n_max grid is run only at $\delta = 0.5$.
+  It is run in both the appendix's overpowered scenario
+  ($n_{\max} = 200$) and its power-calibrated companion
+  ($n_{\max} = 85$).
+- Performance measures. Rejection rate, mean and median N at
+  stop, naive bias, and RMSE of the naive MLE. Each is reported
+  with its Monte Carlo SE per Morris Table 6. For rejection-rate
+  MCSE $\leq 1.1$ pp at $p = 0.5$, $n_{\mathrm{rep}} \geq 2{,}066$;
   $n_{\mathrm{rep}} = 2{,}000$ gives MCSE $\approx 1.12$ pp.
+  Differences in power between designs are often smaller than
+  this. We therefore also compute rejection probabilities and
+  expected sample sizes exactly, by numerical integration
+  (Section 'Exact calculation' below). The simulation is kept
+  for the naive estimator's bias and RMSE, which the exact
+  calculation does not give.
 
-## Design Framework
+## Design framework
 
 We consider a two-arm parallel randomized trial with a
 continuous primary endpoint and known variance. Under
@@ -417,68 +442,120 @@ the null hypothesis $H_0: \delta = 0$ and the
 alternative $H_1: \delta = \delta_1$, we compare the
 following monitoring strategies:
 
-1. **Fixed-sample design:** No interim analysis;
+1. Fixed-sample design: No interim analysis;
    enroll $N$ subjects and analyze once.
-2. **Group sequential design (K = 3):** Three equally
+2. Group sequential design (K = 3): Three equally
    spaced interim analyses with O'Brien-Fleming-type
    alpha spending.
-3. **Group sequential design (K = 5):** Five equally
+3. Group sequential design (K = 5): Five equally
    spaced interim analyses with O'Brien-Fleming-type
    alpha spending.
-4. **Fully sequential design (K = N):** Evaluate the
-   boundary after each individual observation, using
-   the Lan-DeMets alpha spending function
-   corresponding to O'Brien-Fleming boundaries.
+4. Fully sequential design (K = N): Evaluate the
+   boundary after each enrolled treated-control pair,
+   that is, at $n = 1, 2, \ldots, N$ pairs. Use the
+   Lan-DeMets alpha spending function corresponding
+   to O'Brien-Fleming boundaries.
 
-## Alpha Spending Function
+For K < N the looks fall at $n_j = \mathrm{round}(jN/K)$
+pairs, $j = 1, \ldots, K$. The boundaries are computed
+at the realized information fractions $n_j / N$. They
+are therefore matched to the looks at which they are
+applied. Rejection is two-sided, so a trial stops when
+$|Z|$ crosses the boundary in either direction. 'Power'
+therefore includes rejections in the wrong direction.
+The exact probability of such a rejection is at most
+`r sprintf('%.4f', max(exact_res$oc$reject_lower[exact_res$oc$delta >= 0.2]))`
+for every design and every $\delta \geq 0.2$ studied
+here.
+
+## Alpha spending function
 
 For all group sequential and fully sequential designs,
-we employ the Lan-DeMets spending function that
-approximates the O'Brien-Fleming boundary:
+we use the Lan-DeMets spending function that
+approximates the O'Brien-Fleming boundary. It is
+applied to each tail separately at the one-sided level
+$\alpha/2 = 0.025$. In symbols, the alpha spent in each
+tail by information fraction $t$ is
 
-$$\alpha^*(t) = 2 - 2\Phi\left(\frac{z_{\alpha/2}}{\sqrt{t}}\right)$$
+$$\alpha_1^*(t) = 2 - 2\Phi\left(\frac{z_{\alpha/4}}{\sqrt{t}}\right),$$
 
-where $t \in (0, 1]$ is the information fraction and
-$\Phi$ is the standard normal CDF. This spending
-function spends relatively little alpha early in the
-trial and concentrates spending near the end, which is
-consistent with the O'Brien-Fleming philosophy.
+where $t \in (0, 1]$ is the information fraction,
+$\Phi$ is the standard normal CDF, and
+$z_{\alpha/4} = z_{0.0125} \approx 2.24$. The total
+two-sided spending is $2\alpha_1^*(t)$, which equals
+$\alpha = 0.05$ at $t = 1$. This is the function that
+`gsDesign(test.type = 2, alpha = 0.025, sfu = sfLDOF)`
+uses [@anderson2022gsdesign], and all results reflect
+it. Some sources write the two-sided O'Brien-Fleming
+spending function instead as
+$2 - 2\Phi(z_{\alpha/2}/\sqrt{t})$. The two agree at
+$t = 1$ but not earlier. At $t = 0.5$, for example, our
+function spends
+`r sprintf('%.4f', 2 * (2 - 2 * pnorm(qnorm(1 - 0.0125) / sqrt(0.5))))`
+in total, against
+`r sprintf('%.4f', 2 - 2 * pnorm(qnorm(0.975) / sqrt(0.5)))`
+for the two-sided form. Either function spends little
+alpha early in the trial. Most of the spending comes
+near the end, which is consistent with the
+O'Brien-Fleming philosophy.
 
-## Simulation Procedure
+## Simulation procedure
 
 We evaluate the operating characteristics of each design
-via Monte Carlo simulation:
+by Monte Carlo simulation:
 
-- **True effect sizes:** $\delta \in \{0, 0.2, 0.5, 0.8\}$
+- True effect sizes: $\delta \in \{0, 0.2, 0.5, 0.8\}$
   (standardized)
-- **Maximum sample size:** $N = 200$ per arm for the
-  main grid, plus a second scenario sized to give the
-  fixed design approximately 90 percent power at
-  $\delta = 0.5$ ($N = 85$ per arm; see Section
-  "Power-Calibrated Sensitivity Scenario" below)
-- **Significance level:** $\alpha = 0.05$ (two-sided)
-- **Replications:** 2,000 per scenario (20,000 for the
+- Maximum sample size: $N = 200$ per arm for the
+  main grid. A second scenario is sized to give the
+  fixed design about 90 percent power at
+  $\delta = 0.5$ ($N = 85$ per arm). See Section
+  'Power-calibrated sensitivity scenario' below.
+- Significance level: $\alpha = 0.05$ (two-sided)
+- Replications: 2,000 per scenario (20,000 for the
   null scenario used in the type I error table; see
   below)
-- **Random seed:** `set.seed(20260309)`, `RNGkind`
+- Random seed: `set.seed(20260309)`, `RNGkind`
   `"L'Ecuyer-CMRG"`, set once
+
+### Exact calculation
+
+The rejection probability and expected sample size of
+each design can be computed without simulation. We use
+the recursive numerical integration of
+@jennison2000group, as implemented in
+gsDesign. After $n$ pairs the two-sample $z$-statistic
+has mean $\delta\sqrt{n/2}$ for unit variance. We pass
+the same look schedule and the same boundaries as the
+simulation. The calculation is deterministic and has
+no Monte Carlo error. We checked its numerical accuracy
+by halving the integration grid. Rejection
+probabilities changed by less than $10^{-5}$ and
+expected sample sizes by less than 0.001 pairs. Most
+simulated rejection rates and mean sample sizes lie
+within two Monte Carlo SEs of the exact values. Two
+simulated mean sample sizes lie three to four SEs away
+(K = 5 at $\delta = 0.2$, and the fully sequential
+design at $N_{\max} = 85$). Where the two disagree we
+treat the exact values as authoritative. The same
+calculation gives the maximum-sample-size inflation
+needed to hold power at 90 percent for each K. It also
+gives expected enrollment when some subjects are in the
+pipeline at each look (see the Appendix).
 
 ### Reproducibility
 
 All simulation results reported in this manuscript are
 generated by the standalone script
 `analysis/scripts/run_all_simulations.R`. This script
-sources `analysis/scripts/sim_study.R`, sets the seed
-once, runs every scenario the report uses, and writes
-versioned `.rds` files to
+sources `analysis/scripts/sim_study.R` and sets the
+seed once. It then runs every scenario the report uses
+and writes versioned `.rds` files to
 `analysis/data/derived_data/`. The Rmd chunks below
-read those files with `readRDS()` and perform no random
-sampling themselves. The reported numbers therefore do
-not depend on knitr's chunk cache, which does not
-replay RNG state across cached and uncached chunks and
-which previously left the appendix simulation's
-reproducibility undocumented. To regenerate all results
-from scratch:
+read those files with `readRDS()`. They perform no
+random sampling themselves. The exact calculations are
+written to `exact_results.rds` by the same script. To
+regenerate all results from scratch:
 
 ```
 Rscript analysis/scripts/run_all_simulations.R
@@ -486,9 +563,6 @@ Rscript analysis/scripts/run_all_simulations.R
 
 ```{r sim-source}
 source(here::here("analysis", "scripts", "sim_study.R"))
-derived_dir <- here::here(
-  "analysis", "data", "derived_data"
-)
 sim_meta <- readRDS(
   file.path(derived_dir, "sim_metadata.rds")
 )
@@ -515,43 +589,49 @@ t1 <- sim_results_null
 pow_tbl <- sim_results |> dplyr::filter(effect_size == 0.5)
 ```
 
-Under the null ($\delta = 0$), evaluated at
-$n_{\mathrm{rep}} = 20{,}000$ so that the Monte Carlo SE
-is precise enough to assess nominal coverage (MCSE
-$\approx$
-`r sprintf('%.4f', max(t1$mcse_rejection, na.rm = TRUE))`),
-empirical type I error ranged from
+Under the null ($\delta = 0$), we evaluated the designs
+at $n_{\mathrm{rep}} = 20{,}000$. At that size the Monte
+Carlo SE is precise enough to assess nominal coverage
+(MCSE $\approx$
+`r sprintf('%.4f', max(t1$mcse_rejection, na.rm = TRUE))`).
+Empirical type I error ranged from
 `r sprintf('%.3f', min(t1$rejection_rate, na.rm = TRUE))`
 to `r sprintf('%.3f', max(t1$rejection_rate, na.rm = TRUE))`
-against nominal $\alpha = 0.05$. All designs fall within
-roughly two Monte Carlo SEs of nominal. This supersedes
-an earlier reading of this simulation at
-$n_{\mathrm{rep}} = 2{,}000$, in which the fully
-sequential design's rejection rate (0.039) sat about
-2.2 MCSEs below nominal. At $n_{\mathrm{rep}} = 20{,}000$
-the same design's rejection rate is
+against nominal $\alpha = 0.05$. The simulated rates
+rise with K. The fully sequential value,
 `r sprintf('%.3f', t1$rejection_rate[t1$design == "Fully Seq"])`,
-which is consistent with nominal control and indicates
-that the earlier shortfall was Monte Carlo noise rather
-than a systematic conservatism of the K = N discrete
-spending construction. At $\delta = 0.5$ and
-$N_{\max} = 200$ (the overpowered main-grid scenario;
-see the power-calibrated scenario below for a more
-realistic power regime), the fully sequential design
-achieved rejection rate
+sits
+`r sprintf('%.1f', (t1$rejection_rate[t1$design == "Fully Seq"] - 0.05) / t1$mcse_rejection[t1$design == "Fully Seq"])`
+Monte Carlo SEs above nominal. The exact calculation
+settles the question. The exact type I error is
+`r sprintf('%.4f', min(exact_res$oc$reject[exact_res$oc$delta == 0]))`
+to
+`r sprintf('%.4f', max(exact_res$oc$reject[exact_res$oc$delta == 0]))`
+for every K in the grid (3, 5, 10, 20, 50, and N) at
+both values of $N_{\max}$. The upward trend in the
+simulation is therefore Monte Carlo noise. Type I
+error control at every K follows from the spending
+function construction. The exact values confirm it for
+the designs studied here.
+
+At $\delta = 0.5$ and $N_{\max} = 200$, the fully
+sequential design achieved rejection rate
 `r sprintf('%.3f', pow_tbl$rejection_rate[pow_tbl$design == 'Fully Seq'][1])`
 with mean sample size
 `r sprintf('%.1f', pow_tbl$mean_n[pow_tbl$design == 'Fully Seq'][1])`
 (MCSE
-`r sprintf('%.2f', pow_tbl$mcse_mean_n[pow_tbl$design == 'Fully Seq'][1])`),
-versus the fixed design's sample size of
+`r sprintf('%.2f', pow_tbl$mcse_mean_n[pow_tbl$design == 'Fully Seq'][1])`).
+This is the overpowered main-grid scenario; see the
+power-calibrated scenario below for a more realistic
+power regime. By comparison, the fixed design's sample
+size was
 `r sprintf('%.0f', pow_tbl$mean_n[pow_tbl$design == 'Fixed'][1])`
 at rejection rate
 `r sprintf('%.3f', pow_tbl$rejection_rate[pow_tbl$design == 'Fixed'][1])`.
 We report Monte Carlo SEs (MCSE) alongside every
 performance measure in the tables below.
 
-## Type I Error Control
+## Type I error control
 
 ```{r type1-table}
 library(knitr)
@@ -579,7 +659,7 @@ kable(
   )
 ```
 
-## Power and Expected Sample Size
+## Power and expected sample size
 
 ```{r power-table}
 power_tab <- sim_results |>
@@ -606,18 +686,20 @@ kable(
   )
 ```
 
-## Power-Calibrated Sensitivity Scenario
+## Power-calibrated sensitivity scenario
 
-The main grid above is conducted at $N_{\max} = 200$,
-which gives the fixed design essentially saturated
-power (0.998--1.000) at $\delta = 0.5$ and $0.8$.
+The main grid above is conducted at $N_{\max} = 200$.
+This gives the fixed design essentially saturated
+power at $\delta = 0.5$ and $0.8$ (exact values
+`r sprintf('%.3f', ex_get(1, 200, 0.5))` and
+`r sprintf('%.3f', ex_get(1, 200, 0.8))`).
 Sample size savings computed in that regime are
 conditional on gross overpowering. They do not
 establish how much benefit sequential monitoring
 offers when a trial is sized conventionally. We
 therefore add a second scenario, sized so that the
-fixed design has approximately 90 percent power at
-$\delta = 0.5$: $N_{\max} =$
+fixed design has about 90 percent power at
+$\delta = 0.5$. That is, $N_{\max} =$
 `r sim_meta$n90` per arm, from the two-sample normal mean
 formula $N = 2(z_{\alpha/2} + z_\beta)^2 / \delta^2$.
 
@@ -647,53 +729,123 @@ kable(
   )
 ```
 
-In this realistically powered regime, the fully
-sequential design's power drops to
+In this regime the simulated power of the fully
+sequential design is
 `r sprintf('%.3f', pow90_tab$rejection_rate[pow90_tab$design == "Fully Seq"])`,
-about
-`r sprintf('%.1f', 100 * (pow90_tab$rejection_rate[pow90_tab$design == "Fixed"] - pow90_tab$rejection_rate[pow90_tab$design == "Fully Seq"]))`
-percentage points below the fixed design's
-`r sprintf('%.3f', pow90_tab$rejection_rate[pow90_tab$design == "Fixed"])`,
-while still saving
-`r sprintf('%.1f', 100 * (1 - pow90_tab$mean_n[pow90_tab$design == "Fully Seq"] / pow90_tab$mean_n[pow90_tab$design == "Fixed"]))`
-percent of expected sample size relative to the fixed
-design. The sample size savings are real but smaller
-in this regime than in the overpowered main-grid
-scenario above, and the power cost of sequential
-stopping is visible here in a way that it is not there.
+against
+`r sprintf('%.3f', pow90_tab$rejection_rate[pow90_tab$design == "Fixed"])`
+for the fixed design. However, this simulated gap
+overstates the true one. The exact powers are
+`r sprintf('%.3f', ex_get(85, 85, 0.5))` and
+`r sprintf('%.3f', ex_get(1, 85, 0.5))`, a loss of
+`r sprintf('%.1f', 100 * (ex_get(1, 85, 0.5) - ex_get(85, 85, 0.5)))`
+percentage points. The simulated fully sequential cell
+lies
+`r sprintf('%.1f', (ex_get(85, 85, 0.5) - pow90_tab$rejection_rate[pow90_tab$design == "Fully Seq"]) / pow90_tab$mcse_rejection[pow90_tab$design == "Fully Seq"])`
+Monte Carlo SEs below its exact value. Its mean sample
+size
+(`r sprintf('%.1f', pow90_tab$mean_n[pow90_tab$design == "Fully Seq"])`)
+is likewise above the exact value
+(`r sprintf('%.1f', ex_get(85, 85, 0.5, "expected_n"))`).
+An independent simulation of the same design in the
+Appendix agrees with the exact values. We therefore
+read that cell of Table \@ref(tab:power90-table) as
+an outlying Monte Carlo draw. Table \@ref(tab:exact-table) gives the
+exact values for every K. The exact expected sample
+size of the fully sequential design is
+`r sprintf('%.1f', 100 * (1 - ex_get(85, 85, 0.5, "expected_n") / 85))`
+percent below that of the fixed design. The savings
+are real but smaller than in the overpowered main grid.
 
-The same power cost is visible, if somewhat less
-dramatically, even in the overpowered main grid at
-$\delta = 0.2$, the smallest nonzero effect size
-evaluated. Fixed-design power is
-`r sprintf('%.3f', sim_results$rejection_rate[sim_results$design == "Fixed" & sim_results$effect_size == 0.2])`
-versus
-`r sprintf('%.3f', sim_results$rejection_rate[sim_results$design == "Fully Seq" & sim_results$effect_size == 0.2])`
-for the fully sequential design. This is a loss that
-cuts against the paper's ASN-savings thesis, and it is
-worth weighing against the sample size reduction the
-same design offers at larger effect sizes.
+A small loss of power is expected in theory. The
+sequential designs share the fixed design's maximum
+sample size, and each interim look spends some alpha.
+The exact power at $N_{\max} =$ `r sim_meta$n90` and
+$\delta = 0.5$ falls steadily with K, from
+`r sprintf('%.3f', ex_get(3, 85, 0.5))` at K = 3 to
+`r sprintf('%.3f', ex_get(85, 85, 0.5))` at K = N. At
+$\delta = 0.2$ in the main grid the exact powers are
+`r sprintf('%.3f', ex_get(1, 200, 0.2))` (fixed) and
+`r sprintf('%.3f', ex_get(200, 200, 0.2))` (fully
+sequential). A simulation with
+$n_{\mathrm{rep}} = 2{,}000$ cannot resolve losses of
+this size. The usual remedy is to inflate the maximum
+sample size so that every design has the same power.
+We give the required inflation in the Appendix.
 
-## Expected Sample Size by Effect Size
+```{r exact-table}
+exact_tab <- exact_res$oc |>
+  dplyr::filter(n_max == sim_meta$n90) |>
+  dplyr::select(k, delta, reject, expected_n) |>
+  tidyr::pivot_wider(
+    names_from = delta,
+    values_from = c(reject, expected_n)
+  ) |>
+  dplyr::left_join(exact_res$inflation, by = "k") |>
+  dplyr::mutate(
+    inflation = dplyr::if_else(k == 1, 1, inflation),
+    k = dplyr::case_when(
+      k == 1 ~ "Fixed",
+      k == sim_meta$n90 ~ "Fully Seq (K = N)",
+      TRUE ~ paste0("K = ", k)
+    )
+  ) |>
+  dplyr::select(k, reject_0, reject_0.2, reject_0.5,
+    expected_n_0, expected_n_0.5, expected_n_0.8, inflation)
+stopifnot(nrow(exact_tab) == 7, !anyNA(exact_tab))
 
-```{r asn-plot, fig.cap="Expected sample size (ASN) as a function of the true standardized effect size across four monitoring designs. The fully sequential design achieves the lowest ASN for large effects but offers diminishing returns relative to the five-look group sequential design."}
+kable(
+  exact_tab,
+  format = "latex",
+  booktabs = TRUE,
+  escape = FALSE,
+  digits = c(0, 4, 3, 3, 1, 1, 1, 3),
+  col.names = c("Design", "Type I", "Power ($\\delta$=0.2)",
+    "Power ($\\delta$=0.5)", "ASN ($\\delta$=0)",
+    "ASN ($\\delta$=0.5)", "ASN ($\\delta$=0.8)",
+    "Inflation"),
+  caption = paste0(
+    "Exact operating characteristics by numerical ",
+    "integration, $N_{\\max} = ", sim_meta$n90,
+    "$ pairs, with no Monte Carlo error. ASN is the ",
+    "expected number of pairs at stopping. Inflation ",
+    "is the factor by which $N_{\\max}$ must grow to ",
+    "hold 90\\% power at the design alternative, ",
+    "relative to the fixed design."
+  )
+) |>
+  kable_styling(
+    latex_options = c("hold_position", "scale_down"),
+    font_size = 9
+  )
+```
+
+## Expected sample size by effect size
+
+```{r asn-plot, fig.cap="Simulated expected sample size (ASN) as a function of the true standardized effect size for four monitoring designs ($N_{\\max} = 200$). The fully sequential design has the lowest ASN at $\\delta = 0.5$ and $0.8$. Most of the reduction relative to the fixed design is already achieved with five looks. At $\\delta = 0.8$ the K = 3 and K = 5 designs differ by less than one pair, so the ordering among them is not monotone at every effect size."}
 library(ggplot2)
 
-sim_results |>
+# `design` is character, so ggplot2 would order it alphabetically
+# and positional legend labels would be attached to the wrong
+# curves. Fix the level order explicitly.
+design_levels <- c("Fixed", "GS (K=3)", "GS (K=5)", "Fully Seq")
+design_labels <- c("Fixed", "GS (K=3)", "GS (K=5)",
+  "Fully Sequential")
+sim_plot <- sim_results |>
+  dplyr::mutate(design = factor(design, levels = design_levels,
+    labels = design_labels))
+stopifnot(!anyNA(sim_plot$design))
+
+sim_plot |>
   ggplot(aes(x = effect_size, y = mean_n,
     linetype = design, shape = design)) +
   geom_line() +
   geom_point(size = 2.5) +
   scale_linetype_manual(
-    values = c("solid", "dashed", "dotted",
-      "twodash"),
-    labels = c("Fixed", "GS (K=3)", "GS (K=5)",
-      "Fully Sequential")
+    values = c("solid", "dashed", "dotted", "twodash")
   ) +
   scale_shape_manual(
-    values = c(16, 17, 15, 4),
-    labels = c("Fixed", "GS (K=3)", "GS (K=5)",
-      "Fully Sequential")
+    values = c(16, 17, 15, 4)
   ) +
   labs(
     x = "Standardized Effect Size",
@@ -705,19 +857,19 @@ sim_results |>
   theme(legend.position = "bottom")
 ```
 
-## Stopping Time Distribution
+## Stopping time distribution
 
 Stopping fractions are point masses at each design's K
-analysis times, plus a mass at 1.0 for trials that
-reach the final look, including every fixed-design
-trial by construction. A kernel density would smooth
-these point masses into a spread that does not exist in
-the data. We plot the empirical CDF instead, which
-represents a discrete stopping-time distribution
-honestly.
+analysis times. There is also a mass at 1.0 for trials
+that reach the final look. These include every
+fixed-design trial by construction. A kernel density
+would smooth these point masses into a spread that does
+not exist in the data. We plot the empirical CDF
+instead. It represents a discrete stopping-time
+distribution honestly.
 
 ```{r stopping-ecdf, fig.cap="Empirical cumulative distribution of stopping times (information fraction at termination) under a moderate effect size (delta = 0.5). Each design's stopping fraction is a step function with mass only at its own analysis times; the fully sequential design's steps are finer-grained than the group sequential designs'."}
-stop_df <- sim_results |>
+stop_df <- sim_plot |>
   dplyr::filter(effect_size == 0.5) |>
   dplyr::select(design, stop_fractions) |>
   tidyr::unnest_longer(stop_fractions,
@@ -727,10 +879,7 @@ ggplot(stop_df, aes(x = stop_fraction,
   linetype = design)) +
   stat_ecdf(geom = "step", linewidth = 0.6) +
   scale_linetype_manual(
-    values = c("solid", "dashed", "dotted",
-      "twodash"),
-    labels = c("Fixed", "GS (K=3)", "GS (K=5)",
-      "Fully Sequential")
+    values = c("solid", "dashed", "dotted", "twodash")
   ) +
   labs(
     x = "Information Fraction at Stopping",
@@ -748,78 +897,77 @@ the theoretical and the practical dimensions of
 clinical trial monitoring.
 
 From a purely statistical perspective, the fully
-sequential design (group size one) represents the
-limiting case of the group sequential framework. As
-predicted by the classical theory
+sequential design (group size one) is the limiting case
+of the group sequential framework. As predicted by the
+classical theory
 [@wald1947sequential; @armitage1975sequential], it
 achieves the lowest expected sample size when the true
 treatment effect is large. The marginal gain from
 moving from five interim analyses to continuous
 monitoring is, however, modest. This is consistent with
-the well-known result that most of the efficiency
-benefit of sequential monitoring is captured by the
-first few interim analyses [@jennison2000group, Chapter
-7].
+a well-known result [@jennison2000group, Chapter
+7]. That is, most of the efficiency benefit of
+sequential monitoring is captured by the first few
+interim analyses.
 
 The alpha spending function framework
 [@lan1983discrete; @demetsInterimAnalysisAlpha1994]
 provides the theoretical foundation that makes fully
 sequential monitoring rigorous within the modern
-inferential framework. @betensky1998continuous
-demonstrated that continuous stopping boundaries can be
-constructed directly from spending functions. At
-$n_{\mathrm{rep}} = 20{,}000$, precise enough to
-distinguish nominal control from a few-thousandths
-deviation, all four designs' empirical type I error
-rates sit within roughly two Monte Carlo SEs of the
-nominal $\alpha = 0.05$. This supports the claim that
-type I error is controlled at the nominal level under
-continuous monitoring as constructed here (per-pair
-looks with rounded analysis times). We note that we do
-not evaluate whether every discrete-K approximation to
-a continuous spending function shares this property.
+inferential framework. @betensky1998continuous showed
+that continuous stopping boundaries can be constructed
+directly from spending functions. The exact calculation
+shows that type I error is held at the nominal
+$\alpha = 0.05$ for every K we studied. This includes
+one look per pair. The simulated rates at
+$n_{\mathrm{rep}} = 20{,}000$ lie within two Monte Carlo
+SEs of nominal, which is consistent with this. We have
+not examined designs whose look times are not fixed in
+advance.
 
 The designs compared here stop only on rejection of the
 null. No futility (beta-spending) boundary is
-implemented, so a trial that fails to cross the upper
-boundary continues to $N_{\max}$. Consequently, under
-$H_0$ the mean sample size is 197.7 to 200 for every
-design (Table with the type I error results above). The
-simulation therefore demonstrates no expected sample
-size benefit under the null, even though the
+implemented. A trial that fails to cross the upper
+boundary therefore continues to $N_{\max}$.
+Consequently, under $H_0$ the exact expected sample
+size is
+`r sprintf('%.1f', min(exact_res$oc$expected_n[exact_res$oc$delta == 0 & exact_res$oc$n_max == 200]))`
+to 200 pairs for every design at $N_{\max} = 200$. The simulation therefore shows no
+expected sample size benefit under the null. Yet the
 Introduction motivates fully sequential monitoring
 partly through Armitage's lower futility and harm
-boundary, and the appendix's architecture proposal
-recommends conditional-power futility alerts. We note
-that the ASN savings reported throughout this report
-are therefore savings from efficacy-only stopping under
-a true, nonzero treatment effect. They say nothing
-about the sample size benefit, if any, of stopping
-early for futility, which would require adding a
-beta-spending boundary and is left for future work (see
-Future Research). Readers should read every claim of
-sample size 'savings' in this report as conditional on
-that scope.
+boundary. In addition, the appendix's architecture
+proposal recommends conditional-power futility alerts.
+We note that the ASN savings reported throughout this
+report are therefore savings from efficacy-only
+stopping under a true, nonzero treatment effect. They
+say nothing about the sample size benefit, if any, of
+stopping early for futility. That would require adding
+a beta-spending boundary, and it is left for future
+work (see Future research). Readers should read every
+claim of sample size 'savings' in this report as
+conditional on that scope.
 
 Every simulated look is evaluated after a
 treated-control pair (K = 200 corresponds to 200 pairs,
-400 subjects, at the main-grid $N_{\max}$), not after
-each individual response as a literal reading of 'fully
-sequential' (group size one, following one observation
-at a time) might suggest. We retain the paired framing
-throughout because the two-arm normal DGM pairs
-enrollment across arms by construction. The qualitative
-comparison to group sequential designs with K = 3 or K
-= 5 looks is unaffected, but the label 'fully
-sequential' here means 'one look per enrolled pair,'
-not 'one look per observation.'
+400 subjects, at the main-grid $N_{\max}$). A literal
+reading of 'fully sequential' (group size one,
+following one observation at a time) might suggest a
+look after each individual response. That is not what
+is simulated here. We retain the paired framing
+throughout. The two-arm normal DGM pairs enrollment
+across arms by construction. The qualitative comparison
+to group sequential designs with K = 3 or K = 5 looks
+is unaffected. However, the label 'fully sequential'
+here means 'one look per enrolled pair,' not 'one look
+per observation.'
 
 The practical arguments against fully sequential
-monitoring, namely multi-center logistics, delayed
-outcomes, and DSMB governance, remain valid for most
-large confirmatory trials. On the other hand, several
-evolving features of contemporary clinical trial
-practice may narrow the practical gap:
+monitoring remain valid for most large confirmatory
+trials. These arguments are multi-center logistics,
+delayed outcomes, and DSMB governance. On the other
+hand, several evolving features of contemporary
+clinical trial practice may narrow the practical gap:
 
 - Electronic data capture systems increasingly
   support near-real-time data availability.
@@ -829,84 +977,102 @@ practice may narrow the practical gap:
   responses, short-term safety events) eliminate the
   delayed-outcome objection for certain trial types.
 - Algorithmic monitoring can complement, rather than
-  replace, DSMB review -- a continuous monitoring
+  replace, DSMB review. A continuous monitoring
   system could trigger an ad hoc DSMB meeting when
   evidence crosses a threshold.
 
-The revival of continuous sequential monitoring in
+Continuous sequential monitoring has been revived in
 post-market safety surveillance
-[@kulkarni2016continuous] demonstrates that the
-approach is already viable in settings that share some
-of these characteristics. Whether the same logic
-extends to confirmatory efficacy trials remains an open
-question. It appears to depend on the specific
-endpoint, timeline, and regulatory context.
+[@kulldorff2011maximized; @silva2015continuous]. This
+revival shows that the approach is already viable in
+settings that share some of these characteristics.
+
+Delayed response is, in our view, the most important
+of these practical barriers. @hampson2013delayed showed
+that the reduction in expected sample size from a group
+sequential test shrinks when there is a delay in
+response. The reason is that subjects already treated
+but not yet observed are in the pipeline when the trial
+stops. Our main simulation assumes instantaneous
+response. In the Appendix we add a simple pipeline
+calculation for the power-calibrated scenario. It shows
+the same effect for every K, including fully sequential
+monitoring. Whether the same logic extends to
+confirmatory efficacy trials remains an open question.
+It appears to depend on the specific endpoint,
+timeline, and regulatory context.
 
 The comparison of sequential approaches by
 @sebille2000comparison and @sebille2003sequential
-supports the conclusion that the choice between fully
-sequential and group sequential monitoring is driven
-more by practical logistics than by statistical
-efficiency. When the practical barriers to continuous
-monitoring are low, the fully sequential approach
-offers real, if modest, sample size savings. When
-those barriers are high, on the other hand, the group
-sequential approach sacrifices little efficiency while
-gaining substantial operational simplicity.
+supports a conclusion about how to choose between fully
+sequential and group sequential monitoring. The choice
+is driven more by practical logistics than by
+statistical efficiency. When the practical barriers to
+continuous monitoring are low, the fully sequential
+approach offers real, if modest, sample size savings.
+On the other hand, when those barriers are high, the
+group sequential approach sacrifices little efficiency.
+In exchange, it gains substantial operational
+simplicity.
 
-## Position Relative to Anytime-Valid Inference
+## Position relative to anytime-valid inference
 
 The spending-function approach evaluated here is not
 the only contemporary route to continuous monitoring
 with error control. Since roughly 2011, a distinct
 literature on anytime-valid (also called always-valid)
-inference has addressed the same problem, namely valid
-inference at arbitrary, possibly data-dependent
-stopping times, from a different starting point, and it
-is deployed at production scale in industrial A/B
-testing [@johari2017peeking]. Confidence sequences
+inference has addressed the same problem. The problem
+is valid inference at arbitrary, possibly
+data-dependent stopping times. This literature starts
+from a different point, and it is deployed at
+production scale in industrial A/B testing
+[@johari2017peeking]. Confidence sequences
 [@robbins1970statistical; @howard2021time] provide
 intervals that are simultaneously valid at every sample
-size, so a user may stop for any reason, including
-looking at every new observation, without inflating
-type I error. E-values and e-processes generalize this
-to a broader game-theoretic statistics framework
-[@ramdas2023game]. Kulldorff and colleagues' maximized
-sequential probability ratio test
+size. A user may therefore stop for any reason without
+inflating type I error. This includes looking at every
+new observation. E-values and e-processes generalize
+this to a broader game-theoretic statistics framework
+[@ramdas2023game]. The maximized sequential probability
+ratio test of Kulldorff and colleagues
 [@kulldorff2011maximized] is the seminal
 continuous-monitoring method for drug and vaccine
-safety surveillance and predates the safety-surveillance
-application cited earlier [@kulkarni2016continuous]. The
+safety surveillance. It predates the comparison of
+continuous and group sequential surveillance cited
+earlier [@silva2015continuous]. The
 classical monitoring literature this report draws on is
-thoroughly synthesized in @proschan2006statistical, and
-the repeated confidence interval approach of
-@jennison1989interim, referenced without citation in the
-appendix's software architecture proposal, is the group
-sequential analogue of a confidence sequence.
+thoroughly synthesized in @proschan2006statistical. The
+repeated confidence interval approach of
+@jennison1989interim is the group sequential analogue
+of a confidence sequence. It is referenced without
+citation in the appendix's software architecture
+proposal.
 
 These methods differ from the Lan-DeMets alpha-spending
-construction used throughout this report primarily in
-how they are derived (test-martingale or
-confidence-sequence arguments versus
-information-fraction spending functions) and in their
-typical use case (continuous, often unbounded
-monitoring in digital experimentation versus a
-fixed-$N_{\max}$, discretely monitored clinical trial).
-We do not implement an mSPRT or confidence-sequence
-comparator in the simulation reported here. A
-head-to-head comparison of expected sample size and
-naive-estimator bias between a K = 20-50
+construction used throughout this report in two main
+ways. The first is how they are derived:
+test-martingale or confidence-sequence arguments versus
+information-fraction spending functions. The second is
+their typical use case. That is, continuous, often
+unbounded monitoring in digital experimentation versus
+a fixed-$N_{\max}$, discretely monitored clinical
+trial. We do not implement an mSPRT or
+confidence-sequence comparator in the simulation
+reported here. A head-to-head comparison would be a
+natural extension, and it is listed under Future
+research. It would compare expected sample size and
+naive-estimator bias between a K = 20 to 50
 spending-function design and a comparably tuned
-confidence sequence is a natural extension and is
-listed under Future Research. Absent that comparison,
-we do not claim that the spending-function approach
-dominates anytime-valid alternatives, only that it
+confidence sequence. Absent that comparison, we do not
+claim that the spending-function approach dominates
+anytime-valid alternatives. We claim only that it
 remains the more familiar framework for regulated
-confirmatory trials, and that the high-frequency
-monitoring (K = 20 to 50) direction proposed in the
-appendix is one practical way to narrow the gap between
-the K = 3-5 convention and the anytime-valid literature
-that most trialists do not yet use.
+confirmatory trials. We also suggest that the
+high-frequency monitoring (K = 20 to 50) direction
+proposed in the appendix is one practical way to narrow
+a gap. That gap lies between the K = 3-5 convention and
+the anytime-valid literature that most trialists do not
+yet use.
 
 ## Limitations
 
@@ -914,44 +1080,52 @@ This analysis considers only a two-arm trial with a
 continuous endpoint and known variance. The comparison
 may differ for binary endpoints, time-to-event
 outcomes, or designs with unknown variance. The
-simulation uses a fixed maximum sample size; in
+simulation uses a fixed maximum sample size. In
 practice, the maximum may itself be adapted. The
 post-estimation bias issue
 [@emersonParameterEstimationFollowing1990] is
 acknowledged but not directly evaluated here. No
-futility (beta-spending) boundary is implemented, so
-all reported ASN savings are efficacy-only-stopping
-savings (see Discussion). We note that each
-design-by-effect-size cell in the main simulation grid
-draws independent normal outcome data rather than
-reusing a common random-number stream across designs
-(`run_simulation()` in `analysis/scripts/sim_study.R`
+futility (beta-spending) boundary is implemented. All
+reported ASN savings are therefore efficacy-only-stopping
+savings (see Discussion). In the main simulation grid,
+each design-by-effect-size cell draws independent
+normal outcome data. It does not reuse a common
+random-number stream across designs. Specifically,
+`run_simulation()` in `analysis/scripts/sim_study.R`
 calls `simulate_one_trial()` independently for every
-design). Cross-design contrasts at a fixed effect size
+design. Cross-design contrasts at a fixed effect size
 are therefore somewhat noisier than a
-common-random-numbers design would produce, though each
-design's own MCSE is correctly computed from its own
-replications. Finally, the main-grid comparison at
-$N_{\max} = 200$ is overpowered for $\delta \geq 0.5$.
-We address this with the power-calibrated sensitivity
-scenario in Results, but we do not rerun the appendix's
-full K-grid diminishing-returns curve at every effect
-size in the properly powered regime, only at
-$\delta = 0.5$ (see Appendix).
+common-random-numbers design would produce. Each
+design's own MCSE is, however, correctly computed from
+its own replications. For power, type I error, and
+expected sample size, the exact calculation removes
+this concern. It remains for the naive bias, which we
+estimate only by simulation. The delayed-response
+calculation in the Appendix uses a fixed pipeline
+length. It has no accrual model and no futility
+boundary. Finally, the main-grid comparison
+at $N_{\max} = 200$ is overpowered for
+$\delta \geq 0.5$. We address this with the
+power-calibrated sensitivity scenario in Results.
+The simulated K-grid in the Appendix, which also gives
+the naive bias, is run only at $\delta = 0.5$. The
+exact calculation covers every K at
+$\delta = 0, 0.2, 0.5$, and $0.8$ (Table
+\@ref(tab:exact-table)).
 
-## Data and Code Availability
+## Data and code availability
 
 All simulation code, the manuscript source, and this
 report's compiled output are versioned in the git
 repository containing this document
 (`sequentialanalysis`). Simulation results are
-generated by `analysis/scripts/run_all_simulations.R`,
-which is deterministic given the seed recorded in
+generated by `analysis/scripts/run_all_simulations.R`.
+This script is deterministic given the seed recorded in
 `analysis/data/derived_data/sim_metadata.rds`
-(`set.seed(20260309)`, `RNGkind("L'Ecuyer-CMRG")`), and
-it writes the `.rds` files this report reads. We
-record here the key package versions used to generate
-the results in this revision, recorded at simulation
+(`set.seed(20260309)`, `RNGkind("L'Ecuyer-CMRG")`). It
+writes the `.rds` files this report reads. We record
+here the main package versions used to generate the
+results in this revision, recorded at simulation
 time: R
 `r sim_meta$r_version`; gsDesign
 `r sim_meta$package_versions[["gsDesign"]]`; dplyr
@@ -959,113 +1133,124 @@ time: R
 `r sim_meta$package_versions[["ggplot2"]]`; knitr
 `r sim_meta$package_versions[["knitr"]]`. The full
 dependency lockfile is `renv.lock` at the repository
-root.
+root. The results in this revision were generated
+outside the project container. The lockfile pins
+gsDesign 3.9.0, which differs from the version recorded
+above. **TODO (author): run
+`Rscript analysis/scripts/run_all_simulations.R` inside
+the project container so that the recorded package
+versions match `renv.lock`, then delete these three
+sentences.**
 
-# Future Research
+# Future research
 
-1. **Extension to time-to-event endpoints.** The
-   fully sequential paradigm is naturally suited to
-   event-driven analyses; the connection between
-   continuous monitoring and the calendar-time
-   spending function [@lan1983discrete] warrants
+1. Extension to time-to-event endpoints. The fully
+   sequential paradigm is naturally suited to
+   event-driven analyses. The connection between
+   continuous monitoring and calendar-time spending
+   functions [@lan1989group] warrants
    formal evaluation in the survival setting.
 
-2. **Integration with adaptive sample size
-   re-estimation.** Combining continuous monitoring
-   with unblinded sample size re-estimation
-   [@wassmer2016group] could yield designs that
+2. Integration with adaptive sample size
+   re-estimation. Continuous monitoring could be
+   combined with unblinded sample size re-estimation
+   [@wassmer2016group]. The resulting designs could
    adapt both the monitoring frequency and the
    maximum sample size as data accumulate.
 
-3. **Bayesian continuous monitoring.** The Bayesian
+3. Bayesian continuous monitoring. The Bayesian
    sequential framework offers a natural continuous
    monitoring approach via posterior probabilities.
    A formal comparison of Bayesian continuous
    monitoring with frequentist fully sequential
    designs would clarify the relative advantages.
 
-4. **Software development.** While gsDesign
+4. Software development. Both gsDesign
    [@anderson2022gsdesign] and rpact
-   [@wassmer2023rpact] support many interim analyses,
-   dedicated tools for fully sequential (K = N)
-   design with spending function boundaries and
-   bias-adjusted estimation would facilitate
-   practical adoption.
+   [@wassmer2023rpact] support many interim analyses.
+   However, dedicated tools for fully sequential
+   (K = N) design would facilitate practical adoption.
+   Such tools would provide spending function
+   boundaries and bias-adjusted estimation.
 
-5. **Regulatory considerations.** Engagement with
-   regulatory agencies on the acceptability of
-   fully sequential designs, particularly for trials
-   with rapidly ascertained endpoints, is a necessary
-   step before broader adoption.
+5. Regulatory considerations. Engagement with
+   regulatory agencies on the acceptability of fully
+   sequential designs is a necessary step before
+   broader adoption. This applies particularly to
+   trials with rapidly ascertained endpoints.
 
-6. **Post-estimation methods.** Development and
-   evaluation of bias-corrected estimators and
-   confidence intervals specifically tailored to
-   the fully sequential setting, building on
-   Emerson and Fleming
-   [-@emersonParameterEstimationFollowing1990].
+6. Post-estimation methods. Bias-corrected estimators
+   and confidence intervals specifically tailored to
+   the fully sequential setting need development and
+   evaluation. This work would build on Emerson and
+   Fleming [-@emersonParameterEstimationFollowing1990].
 
-7. **Decentralized trials.** The growing use of
+7. Decentralized trials. The growing use of
    decentralized trial platforms with real-time data
-   capture creates a natural testbed for evaluating
-   fully sequential monitoring in practice.
+   capture creates a natural testbed. That testbed
+   could be used to evaluate fully sequential
+   monitoring in practice.
 
-8. **Comparison against anytime-valid inference.** A
-   head-to-head simulation of the spending-function
-   designs evaluated here against a mixture sequential
-   probability ratio test or a confidence-sequence
-   procedure [@robbins1970statistical; @howard2021time;
-   @ramdas2023game], matched on type I error and power,
-   would establish whether the high-frequency
-   spending-function designs proposed in the appendix
-   remain competitive with the anytime-valid literature
-   on ASN and estimator bias.
+8. Comparison against anytime-valid inference. A
+   head-to-head simulation would compare the
+   spending-function designs evaluated here with an
+   anytime-valid procedure. The comparator would be a
+   mixture sequential probability ratio test or a
+   confidence-sequence procedure
+   [@robbins1970statistical; @howard2021time;
+   @ramdas2023game]. The designs would be matched on
+   type I error and power. Such a study would establish
+   whether the appendix's high-frequency
+   spending-function designs remain competitive with
+   the anytime-valid literature on ASN and estimator
+   bias.
 
-9. **Futility stopping.** Add a beta-spending futility
+9. Futility stopping. Add a beta-spending futility
    boundary (e.g., `gsDesign` `test.type = 4`) to each
-   design and re-evaluate ASN under the null and under
-   small effect sizes, which the efficacy-only designs
-   evaluated in this report do not capture.
+   design. Then re-evaluate ASN under the null and
+   under small effect sizes. The efficacy-only designs
+   evaluated in this report do not capture these
+   settings.
 
 \newpage
 \appendix
 
-# Appendix: High-Frequency Monitoring as a Practical
-  Middle Ground
+# Appendix: High-frequency monitoring as a practical middle ground
 
 ## Motivation
 
-The main body of this report frames the comparison as
-fully sequential (K = N) versus the standard group
-sequential paradigm (K = 3--5). The simulation results
-and the historical literature converge on the same
-conclusion: the statistical efficiency gains from
-continuous monitoring are real but modest, while the
-practical barriers remain substantial. This framing,
+The main body of this report compares fully sequential
+monitoring (K = N) with the standard group sequential
+paradigm (K = 3 to 5). The simulation
+results and the historical literature converge on the
+same conclusion. The statistical efficiency gains from
+continuous monitoring are real but modest. The
+practical barriers, on the other hand, remain
+substantial. This framing,
 however, presents a false dichotomy. The alpha spending
 function framework imposes no constraint on K. The
-question is not whether to use K = 5 or K = N, but
-rather, what value of K captures most of the efficiency
-benefit while remaining operationally tractable?
+question is not whether to use K = 5 or K = N. Rather,
+what value of K captures most of the efficiency benefit
+while remaining operationally tractable?
 
 We propose that the most productive direction for
 sequential analysis in 2026 is not a revival of the
-fully sequential paradigm per se, but rather the
+fully sequential paradigm per se. Rather, it is the
 development of high-frequency monitoring designs with K
-in the range of 20--50. We see this as resting on three
-pillars: (i) software that handles large K without
-numerical instability, (ii) bias-corrected estimation
-tailored to the high-frequency setting, and (iii)
-automated alerting systems that translate continuous
-statistical monitoring into actionable triggers for
-human review.
+in the range of 20 to 50. We see this as resting on
+three pillars. The first is software that handles
+large K without numerical instability. The second is
+bias-corrected estimation tailored to the
+high-frequency setting. The third is automated alerting
+systems that translate continuous statistical
+monitoring into actionable triggers for human review.
 
-## Diminishing Returns in K: An Empirical Analysis
+## Diminishing returns in K: an empirical analysis
 
 To motivate the choice of K, we extend the simulation
 from the main report to a finer grid of monitoring
-frequencies. We fix the effect size at $\delta = 0.5$
-and vary K across 3, 5, 10, 20, 50, and N = 200, all
+frequencies. We fix the effect size at $\delta = 0.5$.
+We vary K across 3, 5, 10, 20, 50, and N = 200, all
 under the Lan-DeMets O'Brien-Fleming spending function.
 
 ```{r hf-sim}
@@ -1077,6 +1262,24 @@ hf_results <- readRDS(
 )
 hf_results_90pow <- readRDS(
   file.path(derived_dir, "hf_results_90pow.rds")
+)
+
+hf_n <- function(k) hf_results$mean_n[hf_results$k == k]
+hf_share_fixed <- (200 - hf_n(20)) / (200 - hf_n(200))
+hf_share_k3 <- (hf_n(3) - hf_n(20)) / (hf_n(3) - hf_n(200))
+hf_cap <- paste0(
+  "Simulated expected sample size and sample size savings ",
+  "as a function of K (number of planned analyses) at ",
+  "delta = 0.5, n-max = 200 (overpowered scenario). The ",
+  "curve flattens quickly. Relative to the fixed design, ",
+  "K = 20 captures about ", round(100 * hf_share_fixed),
+  " percent of the ASN reduction achieved by fully ",
+  "sequential monitoring. Relative to K = 3, K = 20 ",
+  "captures about ", round(100 * hf_share_k3),
+  " percent of the further reduction from K = 3 to fully ",
+  "sequential monitoring. The exact values in Table ",
+  "\\@ref(tab:exact-table) show the same shape at ",
+  "n-max = ", sim_meta$n90, "."
 )
 ```
 
@@ -1106,9 +1309,11 @@ kable(
     "per arm, $n_{\\mathrm{rep}} = 2{,}000$). Bias and",
     "RMSE refer to the naive MLE at the stopping time.",
     "Percent saved is relative to the fixed-sample",
-    "maximum. This scenario is overpowered (power",
-    "0.996-1.000 throughout); see the properly powered",
-    "companion table below."
+    "maximum. This scenario is overpowered (simulated",
+    "power", sprintf("%.3f", min(hf_results$rejection_rate)),
+    "to", sprintf("%.3f", max(hf_results$rejection_rate)),
+    "throughout); see the properly powered companion",
+    "table below."
   )
 ) |>
   kable_styling(
@@ -1140,11 +1345,12 @@ kable(
     " frequencies at $\\delta = 0.5$, $N_{\\max} = ",
     sim_meta$n90,
     "$ per arm (fixed design at approximately 90\\%",
-    " power). Compare with the overpowered table above:",
-    " power now visibly declines with K (0.897 at K=3 to",
-    " 0.891 at K=", sim_meta$n90,
-    "), and the percent-saved curve is smaller in",
-    " absolute terms at every K."
+    " power). Each simulated power lies within two Monte",
+    " Carlo SEs of its exact value in Table",
+    " \\@ref(tab:exact-table). The simulation does not",
+    " resolve the differences in power across K.",
+    " The percent-saved curve is smaller in absolute",
+    " terms at every K than in the overpowered table."
   )
 ) |>
   kable_styling(
@@ -1155,20 +1361,28 @@ kable(
 
 At the properly powered $N_{\max} = `r sim_meta$n90`$
 scenario, the diminishing-returns shape survives. Most
-of the achievable savings are again captured by K = 20,
-but the absolute savings are smaller (K = 20 saves
+of the achievable savings are again captured by K = 20.
+However, the absolute savings are smaller. K = 20 saves
 `r sprintf('%.1f', hf_results_90pow$pct_saving[hf_results_90pow$k == 20])`
 percent versus fixed, compared with
 `r sprintf('%.1f', hf_results$pct_saving[hf_results$k == 20])`
-percent in the overpowered $N_{\max} = 200$ scenario),
-and the power cost of frequent monitoring, invisible when
-power is at ceiling, is now measurable: power falls from
-`r sprintf('%.3f', hf_results_90pow$rejection_rate[hf_results_90pow$k == 3])`
-at K = 3 to
-`r sprintf('%.3f', hf_results_90pow$rejection_rate[hf_results_90pow$label == "Fully Seq"])`
-at fully sequential monitoring.
+percent in the overpowered $N_{\max} = 200$ scenario.
+The power cost of frequent monitoring is invisible when
+power is at ceiling. In this scenario it is small but
+not zero. The exact power falls from
+`r sprintf('%.3f', ex_get(3, 85, 0.5))` at K = 3 to
+`r sprintf('%.3f', ex_get(20, 85, 0.5))` at K = 20 and
+`r sprintf('%.3f', ex_get(85, 85, 0.5))` at fully
+sequential monitoring. A simulation of 2,000
+replications cannot measure a change of this size.
+Holding power at 90 percent instead requires a larger
+maximum sample size. The exact inflation factor is
+`r sprintf('%.3f', ex_infl(5))` for K = 5,
+`r sprintf('%.3f', ex_infl(20))` for K = 20, and
+`r sprintf('%.3f', ex_infl(sim_meta$n90))` for K =
+`r sim_meta$n90`.
 
-```{r hf-asn-plot, fig.cap="Expected sample size and sample size savings as a function of K (number of planned analyses) under delta = 0.5, n-max = 200 (overpowered scenario). The curve flattens rapidly: relative to the fixed design, K = 20 captures about 96 percent of the ASN reduction achieved by fully sequential monitoring (52.8 over 55.0); relative to K = 3, K = 20 captures about 87 percent of the incremental reduction from K = 3 to fully sequential, that is, (52.8 minus 38.7) over (55.0 minus 38.7). See the properly powered companion scenario above for the same comparison outside the ceiling-power regime.", fig.height=3.5}
+```{r hf-asn-plot, fig.cap=hf_cap, fig.height=3.5}
 library(ggplot2)
 
 p1 <- ggplot(hf_results,
@@ -1204,18 +1418,101 @@ p2 <- ggplot(hf_results,
 gridExtra::grid.arrange(p1, p2, ncol = 2)
 ```
 
-The key result is the shape of the curve. Moving from
+The main result is the shape of the curve. Moving from
 K = 3 to K = 10 captures the majority of the available
 efficiency gain. Moving from K = 10 to K = 20 adds a
 meaningful but smaller increment. Beyond K = 20, the
-returns diminish sharply. By K = 50, the design is, for
-practical purposes, operationally indistinguishable
-from fully sequential monitoring, yet the
-infrastructure demands are far more manageable.
+returns diminish sharply. By K = 50 the expected sample
+size is within about one pair of fully sequential
+monitoring in the exact calculation. We conjecture that
+the infrastructure demands of K = 50 are lower than
+those of one look per pair, but we have not measured
+them. The shape itself is, to the best of our
+knowledge, not new. Optimal group sequential tests have
+been studied as the number of analyses grows
+[@eales1992improved]. The textbook literature reports
+expected sample sizes for several values of K
+[@jennison2000group]. Our grid gives exact values for
+the specific designs and sample sizes used here.
 
-## Bias Under High-Frequency Monitoring
+## Delayed responses
 
-```{r hf-bias-plot, fig.cap="Naive MLE bias at the stopping time as a function of K. More frequent monitoring increases the conditional bias at stopping because the test statistic is more likely to cross the boundary at an extreme point. The bias remains small in absolute terms and tends to increase with K, within Monte Carlo noise (see MCSE(Bias) in the table above).", fig.height=3}
+```{r pipeline-table}
+pipe_tab <- exact_res$pipeline |>
+  dplyr::filter(delta == 0.5) |>
+  dplyr::select(k, overrun, expected_n) |>
+  tidyr::pivot_wider(names_from = overrun,
+    values_from = expected_n, names_prefix = "p") |>
+  dplyr::mutate(k = dplyr::case_when(
+    k == 1 ~ "Fixed",
+    k == sim_meta$n90 ~ "Fully Seq (K = N)",
+    TRUE ~ paste0("K = ", k)
+  ))
+stopifnot(nrow(pipe_tab) == 7, !anyNA(pipe_tab))
+pipe_red <- function(k, p) {
+  100 * (1 - ex_get(k, sim_meta$n90, 0.5, "expected_n",
+    overrun = p, tab = exact_res$pipeline) / sim_meta$n90)
+}
+
+kable(
+  pipe_tab,
+  format = "latex",
+  booktabs = TRUE,
+  digits = 1,
+  col.names = c("Design", "0", "5", "10", "20"),
+  caption = paste0(
+    "Exact expected number of pairs enrolled at stopping, ",
+    "by pipeline length (pairs enrolled but not yet ",
+    "observed at each interim look), $\\delta = 0.5$, ",
+    "$N_{\\max} = ", sim_meta$n90, "$. The pipeline ",
+    "lengths are illustrative, not taken from any trial. ",
+    "Power is unchanged by the pipeline."
+  )
+) |>
+  kable_styling(
+    latex_options = c("hold_position"),
+    font_size = 9
+  )
+```
+
+The main simulation assumes that each response is
+observed at once. In practice some subjects have been
+enrolled but not yet observed at each interim look.
+@hampson2013delayed call these 'pipeline' subjects.
+When the trial stops, they have already been enrolled.
+We model this in the simplest way. At each interim look
+a fixed number of further pairs, $p$, has been
+enrolled, up to $N_{\max}$. The decision still uses only
+the observed pairs, so power and type I error do not
+change. Expected enrollment does change. Table
+\@ref(tab:pipeline-table) gives it for $p$ = 0, 5, 10,
+and 20 pairs. These values are illustrative. For
+example, $p = 10$ would correspond to a one-month
+response lag at an accrual rate of 10 pairs per month.
+
+The pipeline reduces the savings of every sequential
+design. With no pipeline, K = 20 reduces expected
+enrollment by
+`r sprintf('%.1f', pipe_red(20, 0))` percent relative to
+the fixed design. With a pipeline of 10 pairs the
+reduction is `r sprintf('%.1f', pipe_red(20, 10))`
+percent, and with 20 pairs it is
+`r sprintf('%.1f', pipe_red(20, 20))` percent. The
+advantage of K = 20 over K = 5 also shrinks, from
+`r sprintf('%.1f', pipe_red(20, 0) - pipe_red(5, 0))`
+to
+`r sprintf('%.1f', pipe_red(20, 20) - pipe_red(5, 20))`
+percentage points. This is the effect that
+@hampson2013delayed describe. Our calculation has no
+accrual model and no futility boundary. It also does
+not use the pipeline data at the final analysis in the
+way their designs do. It should be read as a rough
+indication of how quickly the gains from frequent
+looks erode as the response lag grows.
+
+## Bias under high-frequency monitoring
+
+```{r hf-bias-plot, fig.cap="Simulated bias of the naive MLE at the stopping time as a function of K (delta = 0.5, n-max = 200). The bias is small in absolute terms. It dips at K = 5 and rises from K = 10 onward. The dip is within Monte Carlo noise (see MCSE(Bias) in the table above).", fig.height=3}
 ggplot(hf_results,
   aes(x = k, y = bias_naive)) +
   geom_line() +
@@ -1237,89 +1534,105 @@ ggplot(hf_results,
 A well-known consequence of optional stopping is that
 the naive maximum likelihood estimate at the stopping
 time is biased away from the null
-[@emersonParameterEstimationFollowing1990]. The figure
-above shows that this bias tends to increase with K
-(0.046 at K = 50 versus 0.044 at K = 200, a reversal
-within Monte Carlo noise: MCSE(Bias) is on the order of
-0.003-0.004 at these K, so strict monotonicity is not
-established). More frequent monitoring creates more
-opportunities for the test statistic to cross the
-boundary at an extreme realization. Two observations,
-however, temper this concern. First, the absolute
-magnitude of the bias remains modest even at K = 200.
-Second, the bias is a known and correctable phenomenon.
-Several approaches to bias-corrected estimation
-following sequential monitoring have been developed,
-including median unbiased estimation, conditional MLE
-methods, and bootstrap-based corrections. Practical
-adoption of high-frequency monitoring will require that
-these methods be packaged into accessible software
-rather than remaining the province of methodological
+[@whitehead1986bias; @emersonParameterEstimationFollowing1990].
+At $N_{\max} = 200$ the simulated bias is
+`r sprintf('%.3f', hf_results$bias_naive[hf_results$k == 3])`
+at K = 3 and
+`r sprintf('%.3f', hf_results$bias_naive[hf_results$k == 5])`
+at K = 5. It then rises steadily, from
+`r sprintf('%.3f', hf_results$bias_naive[hf_results$k == 10])`
+at K = 10 to
+`r sprintf('%.3f', hf_results$bias_naive[hf_results$k == 200])`
+at K = 200. The MCSE of each value is about
+`r sprintf('%.3f', mean(hf_results$mcse_bias_naive))`,
+so the dip at K = 5 is within Monte Carlo noise. The
+rise from K = 10 onward has a plausible explanation.
+More frequent monitoring gives the test statistic more
+chances to cross the boundary at an extreme value. We
+have not tested that trend formally. Two
+observations, however, temper this concern. First, the
+absolute magnitude of the bias remains modest even at
+K = 200. Second, the bias is a known and correctable
+phenomenon. Several approaches to bias-adjusted
+estimation following sequential monitoring have been
+developed. These include bias-adjusted maximum
+likelihood estimation [@whitehead1986bias], median
+unbiased estimation based on an ordering of the sample
+space [@emersonParameterEstimationFollowing1990]. The
+bias conditional on early stopping has also been
+studied [@fan2004conditional]. Practical
+adoption of
+high-frequency monitoring will require that these
+methods be packaged into accessible software. Otherwise
+they will remain the province of methodological
 specialists.
 
-## A Software Architecture for High-Frequency
-   Monitoring
+## A software architecture for high-frequency monitoring
 
-The current generation of group sequential software,
-namely gsDesign [@anderson2022gsdesign], rpact
+The current generation of group sequential software was
+designed for the K = 3 to 5 regime. This generation
+includes gsDesign [@anderson2022gsdesign], rpact
 [@wassmer2023rpact], and the Lan-DeMets boundary
-programs, was designed for the K = 3--5 regime. While
-these tools can technically accommodate larger K, they
-were not optimized for it. We suggest that a
-purpose-built system for high-frequency monitoring
-would require three components.
+programs. These tools can technically accommodate
+larger K, but they were not optimized for it. We
+suggest that a purpose-built system for high-frequency
+monitoring would require three components.
 
-**Boundary computation engine.** The spending function
-must be evaluated at K = 20--50 information fractions,
-and the corresponding critical boundaries computed via
-numerical integration or recursive application of the
-multivariate normal distribution. For moderate K (up to
-50), existing algorithms based on the work of
-@jennison2000group scale adequately. For K approaching
-N, direct computation becomes prohibitive, and the
+*Boundary computation engine.* The spending function
+must be evaluated at K = 20 to 50 information
+fractions. The corresponding critical boundaries must
+then be computed. This uses numerical integration or
+recursive application of the multivariate normal
+distribution. For moderate K (up to 50), existing
+algorithms based on the work of @jennison2000group
+scale adequately. For K approaching N, direct
+computation becomes prohibitive. In that case the
 continuous boundary approximation of
 @betensky1998continuous should be used instead. A
 practical implementation would pre-compute boundaries
-for a fine grid of information fractions and
+for a fine grid of information fractions. It would then
 interpolate at the actual analysis times.
 
-**Bias-corrected estimation module.** At each interim
-analysis, the system should report not only the naive
-test statistic and p-value but also:
+*Bias-corrected estimation module.* At each interim
+analysis, the system should report the naive test
+statistic and p-value. It should also report the
+following:
 
-- The median unbiased estimate of the treatment effect,
-  computed by inverting the stage-wise ordering of the
-  sample space.
+- The median unbiased estimate of the treatment effect.
+  It is computed by inverting the stage-wise ordering of
+  the sample space.
 - A repeated confidence interval that maintains
   simultaneous coverage across all analysis times.
 - The conditional power given the data observed so
-  far, to inform DSMB deliberations about futility.
+  far. This would inform DSMB deliberations about
+  futility.
 
 These quantities are computationally more demanding
-than the naive estimates but are feasible for K up to
-50 with modern hardware.
+than the naive estimates. They are, however, feasible
+for K up to 50 with modern hardware.
 
-**Automated alerting layer.** Perhaps the most
+*Automated alerting layer.* Perhaps the most
 consequential practical innovation would be an alerting
-system that decouples statistical monitoring from DSMB
-scheduling. In the current paradigm, the DSMB meets at
-pre-specified calendar times, and the interim analysis
-is conducted at that meeting. In a high-frequency
-monitoring paradigm, the statistical comparison would
-run continuously, or at each new data lock, and the
-system would generate alerts at three thresholds:
+system. Such a system decouples statistical monitoring
+from DSMB scheduling. In the current paradigm, the DSMB
+meets at pre-specified calendar times. The interim
+analysis is conducted at that meeting. In a
+high-frequency monitoring paradigm, the statistical
+comparison would run continuously, or at each new data
+lock. The system would generate alerts at three
+thresholds:
 
-1. *Efficacy signal* -- the test statistic crosses the
+1. *Efficacy signal*: the test statistic crosses the
    upper spending function boundary. This triggers an
-   expedited DSMB meeting to review the unblinded data
-   and consider early termination.
-2. *Futility signal* -- the conditional power falls
-   below a pre-specified threshold (e.g., 10--20\%).
+   expedited DSMB meeting. The DSMB would review the
+   unblinded data and consider early termination.
+2. *Futility signal*: the conditional power falls
+   below a pre-specified threshold (e.g., 10 to 20\%).
    This triggers a DSMB review of whether to continue
    enrollment.
-3. *Safety signal* -- a secondary monitoring rule for
+3. *Safety signal*: a secondary monitoring rule for
    adverse events crosses a safety boundary. This
-   triggers immediate safety review regardless of the
+   triggers immediate safety review, regardless of the
    efficacy analysis schedule.
 
 The DSMB retains full authority over all stopping
@@ -1327,81 +1640,98 @@ decisions. The system merely ensures that evidence is
 not accumulating unexamined between scheduled meetings.
 This is particularly relevant for trials in which
 enrollment is fast relative to the DSMB meeting
-schedule. If 50 patients enroll between quarterly
-meetings, for instance, a group sequential design with
-K = 5 may miss the opportunity to stop the trial at the
-statistically optimal time.
+schedule. For instance, suppose 50 patients enroll
+between quarterly meetings. A group sequential design
+with K = 5 may then miss the opportunity to stop the
+trial at the statistically optimal time.
 
-## The Diminishing Marginal Cost of More Analyses
+## The diminishing marginal cost of more analyses
 
 A natural counterargument to high-frequency monitoring
 is that each interim analysis incurs administrative
-cost: data locks, database reconciliation, statistical
-programming, and DSMB coordination. This is true in the
-current paradigm, but it is largely an artifact of it.
-If the monitoring system is automated, that is, if
-data are ingested continuously from electronic data
-capture, boundaries are pre-computed, and the test
-statistic is updated programmatically, then the
-marginal cost of the 21st analysis is approximately
-zero. The cost structure shifts from per-analysis
-overhead to a fixed upfront investment in
-infrastructure. For large trials where the cost per
-enrolled patient is high and the potential savings from
-early termination are substantial, this investment
-seems easily justified.
+cost. This cost includes data locks, database
+reconciliation, statistical programming, and DSMB
+coordination. This is true in the current paradigm, but
+it is largely an artifact of it. Suppose the monitoring
+system is automated. That is, data are ingested
+continuously from electronic data capture, boundaries
+are pre-computed, and the test statistic is updated
+programmatically. Then we conjecture that the marginal
+cost of the 21st analysis would be small. The cost
+structure would shift from per-analysis overhead to a
+fixed upfront investment in infrastructure. We have
+not measured either cost. Consider large trials where
+the cost per enrolled patient is high and the potential
+savings from early termination are substantial. For
+such trials the investment may be worthwhile. A cost
+model would be needed to show this.
 
-## Practical Recommendations
+## Practical recommendations
 
 In sum, based on the simulation results and the
 considerations above, we offer the following concrete
 recommendations:
 
-1. **Default to K = 20 rather than K = 5.** For trials
-   with electronically captured endpoints and
-   turnaround times of less than one month, the
-   spending function framework supports 20 planned
-   analyses with no loss of type I error control and
-   meaningful gains in expected sample size. The
-   practical overhead is minimal if the monitoring
-   system is automated.
+1. Consider K = 20 rather than K = 5 when responses
+   are observed quickly relative to accrual. The exact
+   type I error at K = 20 is
+   `r sprintf('%.4f', ex_get(20, 85, 0))`, so the
+   spending function holds the nominal level. With no
+   pipeline, K = 20 lowers expected enrollment at
+   $\delta = 0.5$ by
+   `r sprintf('%.1f', pipe_red(20, 0) - pipe_red(5, 0))`
+   percentage points more than K = 5 does. With a
+   pipeline of 20 pairs the extra gain is
+   `r sprintf('%.1f', pipe_red(20, 20) - pipe_red(5, 20))`
+   points. How short the response lag must be for K =
+   20 to be worthwhile depends on the accrual rate. We
+   have not modeled it beyond the illustrative values
+   above. We also conjecture, without measurement, that
+   the overhead of the extra looks is small if
+   monitoring is automated.
 
-2. **Use the O'Brien-Fleming spending function.** At
-   high K, the O'Brien-Fleming spending function
-   spends negligible alpha at early analyses, so the
-   cost of 'looking more often' is almost entirely
-   borne by a trivially small increase in the maximum
-   sample size (typically less than 1\% inflation
-   relative to the fixed-sample design).
+2. Use the O'Brien-Fleming spending function, and
+   inflate the maximum sample size to hold power. At
+   high K the O'Brien-Fleming function spends little
+   alpha at early analyses. The cost of 'looking more
+   often' is therefore borne mostly by an increase in
+   the maximum sample size. The exact inflation needed
+   for 90 percent power is
+   `r sprintf('%.1f', 100 * (ex_infl(5) - 1))` percent
+   for K = 5,
+   `r sprintf('%.1f', 100 * (ex_infl(20) - 1))` percent
+   for K = 20, and
+   `r sprintf('%.1f', 100 * (ex_infl(200) - 1))` percent
+   for K = 200. Without this inflation the sequential
+   designs lose a little power, as in Table
+   \@ref(tab:exact-table).
 
-3. **Report bias-corrected estimates at every
-   analysis.** The naive MLE should never be the sole
-   estimate presented to a DSMB. At minimum, report
-   the median unbiased estimate and the repeated
-   confidence interval alongside the naive values.
+3. Report bias-corrected estimates at every analysis.
+   The naive MLE should never be the sole estimate
+   presented to a DSMB. At minimum, report the median
+   unbiased estimate and the repeated confidence
+   interval alongside the naive values.
 
-4. **Build the alerting system first.** The most
-   impactful near-term investment is not in novel
-   statistical methodology but in software
-   engineering: a system that ingests data, updates
-   the test statistic, evaluates it against
-   pre-computed boundaries, and generates structured
-   alerts when thresholds are crossed. This system
-   should produce a standardized DSMB report at each
-   triggered analysis, including the spending function
-   status (cumulative alpha spent), the bias-corrected
-   estimate, conditional power, and a recommendation
-   for whether a DSMB meeting is warranted.
+4. Build the alerting system first. The most impactful
+   near-term investment is in software engineering,
+   not in novel statistical methodology. The system
+   would ingest data, update the test statistic, and
+   evaluate it against pre-computed boundaries. It
+   would generate structured alerts when thresholds
+   are crossed. This system should produce a
+   standardized DSMB report at each triggered
+   analysis. The report would include the spending
+   function status (cumulative alpha spent), the
+   bias-corrected estimate, and conditional power. It
+   would also include a recommendation on whether a
+   DSMB meeting is warranted.
 
-5. **Treat K as a design parameter to be optimized.**
-   Rather than choosing K by convention (the current
-   default of 3--5), select K by explicitly trading
+5. Treat K as a design parameter to be optimized. Do
+   not choose K by convention (the current default of
+   3 to 5). Instead, select K by explicitly trading
    off expected sample size savings against
    infrastructure cost. The diminishing-returns curve
    from the simulation provides the empirical basis
    for this trade-off.
 
 # References
-
-A remediation plan is recorded in the audit file and will be
-taken up in a subsequent revision.
